@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environments
+.env
+.venv
+env/
+venv/
+*.env
+
+# HuggingFace / model caches
+hfcache/
+.cache/
+local_txgemma_model/
+*.safetensors
+
+# Adapter / checkpoint weights (large — host on HuggingFace)
+models/
+*.pt
+*.pth
+*.bin
+
+# Generated / intermediate data
+data/partitions/Raw/
+outputs/
+*/processed/
+
+# Training outputs & logs
+logs/
+*.out
+*.err
+tea_debug.log
+
+# Training output directories (adapters hosted on HuggingFace, predictions too large)
+results/Gemma4EC-2b/
+results/Gemma4EC-9b/
+results/APIs/
+results/Raw/
+results/Rhea_Scaffold/
+results/Rhea_Stratified/
+results/Rhea_Time/
+results/zeroshot/
+*.tsv
+
+# Dev / scratch
+stuff/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# W&B local cache
+wandb/

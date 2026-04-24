@@ -1,0 +1,50 @@
+name: gemma4ec
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - pip
+  - ca-certificates
+  - openssl
+
+  # --- Optional but recommended ---
+  - numpy
+  - pandas
+  - scikit-learn
+
+  - pip:
+      # Core libraries for gemma4ec
+      - torch==2.8.0
+      - torchvision==0.23.0
+      - torchaudio==2.8.0
+      - accelerate==1.7.0
+      - transformers==4.52.3
+      - peft==0.15.2
+      - datasets==3.6.0
+      - safetensors==0.5.3
+
+      # Theia MLP baseline
+      - drfp
+      - theia
+
+      # gemma4ec utilities
+      - einops
+      - tqdm
+      - regex
+      - sentencepiece  # sometimes required for HF models
+
+      # APIs used in predict_api.py
+      - openai
+      - google-genai
+      - tiktoken
+
+      # Optional: WandB logging
+      - wandb
+
+      # Optional: data manipulation / plotting
+      - matplotlib
+      - seaborn
+
+      # Optional but useful
+      - jupyterlab
+      - ipykernel

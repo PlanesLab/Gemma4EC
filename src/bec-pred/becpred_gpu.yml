@@ -1,0 +1,12 @@
+name: becpred_gpu_fresh
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.8        # safer than 3.6
+  - rdkit=2020.03.3
+  - cudatoolkit=10.2
+  - numpy
+  - pandas
+  - pip
+prefix: /scratch/jarcagniriv/Envs/becpred_gpu
