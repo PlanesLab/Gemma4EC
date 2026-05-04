@@ -278,6 +278,7 @@ Benchmark on the standard test set (support-weighted MCC across all EC sub-subcl
 |---|---|---|---|---|---|---|---|---|
 | **Gemma4EC-9b** | **0.903** | 0.848 | 0.971 | 0.772 | 0.849 | 0.780 | 0.895 | 0.433 |
 | [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) | 0.886 | 0.799 | 0.965 | 0.777 | 0.834 | 0.681 | 0.869 | 0.314 |
+| Theia | 0.880 | 0.806 | 0.958 | 0.733 | 0.814 | 0.740 | 0.824 | — |
 | Gemma4EC-2b | 0.870 | 0.799 | 0.954 | 0.752 | 0.724 | 0.685 | 0.846 | 0.571 |
 | [Gemini 2.5 Flash](https://ai.google.dev/gemini-api/docs?hl=es-419) | 0.774 | 0.593 | 0.927 | 0.555 | 0.737 | 0.496 | 0.669 | 0.000 |
 | [ChatGPT-5 (v2)](https://openai.com/es-ES/api/) | 0.531 | 0.354 | 0.721 | 0.317 | 0.181 | 0.383 | 0.180 | 0.000 |
