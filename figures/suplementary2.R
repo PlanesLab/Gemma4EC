@@ -3,13 +3,14 @@
 # ============================================================
 library(ggplot2)
 library(dplyr)
+library(tidyr)
 library(readr)
 library(cowplot)
 
 # ============================================================
 # Load data (NEW)
 # ============================================================
-data <- read_csv("/Users/josefinaarcagni/Downloads/file3_splits_weighted_mcc.csv")
+data <- read_csv("/scratch/jarcagniriv/Gemma4EC/results/summary/splits_weighted_mcc.csv")
 
 # ============================================================
 # Reshape data (WIDE → LONG)  🔥 KEY STEP
@@ -131,7 +132,7 @@ final_plot <- plot_grid(
 # Save
 # ============================================================
 ggsave(
-  "/Users/josefinaarcagni/Documents/Gemma4EC/splits.png",
+  "/scratch/jarcagniriv/Gemma4EC/figures/splits.png",
   final_plot,
   width = 16,
   height = 18,

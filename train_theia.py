@@ -82,10 +82,6 @@ def load_split(csv_path: Path, le: LabelEncoder | None, desc: str) -> tuple[pd.D
     df = pd.read_csv(csv_path)
     df = df[df["rxn_smiles"].notna() & df["ec"].notna()].copy()
 
-    # Remove EC class 7 (translocases) — matches original Theia preprocessing
-    df["_ec1"] = df["ec"].astype(str).str.split(".").str[0]
-    df = df[df["_ec1"] != "7"].drop(columns=["_ec1"])
-
     df["rxn_smiles"] = df["rxn_smiles"].astype(str).str.strip()
     df["ec"] = df["ec"].astype(str).str.strip()
 
