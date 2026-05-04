@@ -368,4 +368,3 @@ gemma4ec/
 |---|---|
 | Josefina Arcagni | jarcagniriv@unav.es |
 | Joseba Sancho-Zamora | jsanchoz@unav.es |
-| Katyna Sada | ksada@unav.es |
