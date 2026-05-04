@@ -57,6 +57,10 @@ MODELS = {
         RESULTS / "Gemma4EC-9b/9b_test_predictions_pred_EC_NUMBER.EC_NUMBER_PROMPT_2_gemma4ec.tsv",
         "Gemma4EC",
     ),
+    "Theia": (
+        RESULTS / "Theia/theia_test_predictions.tsv",
+        "Theia",
+    ),
 }
 
 
@@ -79,6 +83,9 @@ def parse_ecs(s):
 # Load all model data
 model_data = {}  # name -> (true_sets, pred_sets)
 for name, (path, group) in MODELS.items():
+    if not path.exists():
+        print(f"[skip] {name}: file not found ({path})")
+        continue
     sep = "," if path.suffix == ".csv" else "\t"
     df = pd.read_csv(path, sep=sep, low_memory=False)
     if "Reaction" in df.columns:  # BEC-Pred: join true labels from test.csv
@@ -106,6 +113,8 @@ mlb.fit([all_labels])
 # Evaluate
 records = []
 for name, (path, group) in MODELS.items():
+    if name not in model_data:
+        continue
     true_sets, pred_sets = model_data[name]
     y_true = mlb.transform(true_sets)
     y_pred = mlb.transform(pred_sets)
@@ -119,16 +128,16 @@ for name, (path, group) in MODELS.items():
     w_prec = float(np.average(prec_list, weights=support))
     w_rec  = float(np.average(rec_list,  weights=support))
 
-    print(f"{name:<22}  MCC={w_mcc:.4f}  PPV={w_prec:.4f}  Recall={w_rec:.4f}")
+    print(f"{name:<22}  MCC={w_mcc:.3f}  PPV={w_prec:.3f}  Recall={w_rec:.3f}")
     records.append({
         "Model": name,
         "Group": group,
-        "Weighted_MCC": round(w_mcc, 4),
-        "Weighted_PPV": round(w_prec, 4),
-        "Weighted_Recall": round(w_rec, 4),
+        "Weighted_MCC": w_mcc,
+        "Weighted_PPV": w_prec,
+        "Weighted_Recall": w_rec,
     })
 
 out = pd.DataFrame(records)
 out_path = RESULTS / "summary" / "weighted_metrics.csv"
-out.to_csv(out_path, index=False)
+out.to_csv(out_path, index=False, float_format="%.3f")
 print(f"\nSaved → {out_path}")

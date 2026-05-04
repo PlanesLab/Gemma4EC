@@ -13,7 +13,6 @@
       • <a href="#zero-shot-evaluation">Zero-shot evaluation</a><br>
       • <a href="#fine-tuning">Fine-tuning</a><br>
       • <a href="#benchmark-partitions">Benchmark partitions</a><br>
-      • <a href="#theia-mlp-baseline">Theia MLP baseline</a><br>
       • <a href="#hpc--slurm">HPC / SLURM</a><br>
       • <a href="#project-structure">Project structure</a><br>
       • <a href="#cite">Cite</a><br>
@@ -239,33 +238,6 @@ python scripts/summarize_results.py
 
 ---
 
-## Theia MLP baseline
-
-[Theia](https://github.com/reymond-group/theia) is an MLP classifier that uses DRFP fingerprints
-as input. We include scripts to retrain it from scratch on the same data for a fair comparison.
-`drfp` and `theia` are included in `envs/gemma4ec_env.yaml`.
-
-**Train on the raw partition:**
-```bash
-python train_theia.py \
-  --train_csv data/raw/train.csv \
-  --val_csv   data/raw/val.csv \
-  --test_csv  data/raw/test.csv \
-  --output_dir outputs/theia_raw
-# saves outputs/theia_raw/model.pt and outputs/theia_raw/label_encoder.pkl
-```
-
-**Evaluate a pre-trained Theia model:**
-```bash
-python eval_theia.py \
-  --input_csv    data/raw/test.csv \
-  --output_tsv   outputs/theia_raw/test_predictions.tsv \
-  --model_pt     outputs/theia_raw/model.pt \
-  --labelenc_pkl outputs/theia_raw/label_encoder.pkl
-```
-
----
-
 ## HPC / SLURM
 
 For running on a cluster, all workflows have matching SLURM scripts in `slurm/`.
@@ -290,11 +262,6 @@ sbatch --export=ALL,DB_NAME=Rhea_Time slurm/run_predict_partition.sh
 **Zero-shot baseline:**
 ```bash
 sbatch slurm/run_predict_zeroshot.sh
-```
-
-**Theia MLP baseline:**
-```bash
-sbatch slurm/run_train_theia.sh
 ```
 
 See [`slurm/README.md`](slurm/README.md) for the full list of scripts and options.

@@ -38,6 +38,7 @@ MODELS = {
     "BEC-Pred":         RESULTS / "bec-pred/results_test_ec.csv",
     "Gemma4EC-2b":      RESULTS / "Gemma4EC-2b/2b_test_predictor_predictions_pred.EC_NUMBER.EC_NUMBER_PROMPT_2.d6i9pynh.tsv",
     "Gemma4EC-9b":      RESULTS / "Gemma4EC-9b/9b_test_predictions_pred_EC_NUMBER.EC_NUMBER_PROMPT_2_gemma4ec.tsv",
+    "Theia":            RESULTS / "Theia/theia_test_predictions.tsv",
 }
 
 TRUE_CSV = RESULTS.parent / "src" / "bec-pred" / "DB" / "test.csv"
@@ -128,7 +129,12 @@ print("=" * 60)
 print("FILE 2 — per-class MCC (subsubclass)")
 print("=" * 60)
 
-model_data = {name: load_sets(path) for name, path in MODELS.items()}
+model_data = {}
+for name, path in MODELS.items():
+    if not path.exists():
+        print(f"[skip] {name}: file not found ({path})")
+        continue
+    model_data[name] = load_sets(path)
 
 all_labels = sorted(
     {lbl for ts, ps in model_data.values() for s in ts + ps for lbl in s}
@@ -140,12 +146,12 @@ file2_rows = []
 weighted_avgs = {}
 for name, (ts, ps) in model_data.items():
     w_mcc, _, _, per_class = evaluate(ts, ps, mlb, all_labels)
-    weighted_avgs[name] = round(w_mcc, 4)
-    file2_rows.append({"EC_class": "Weighted_avg", **{name: round(w_mcc, 4) for name in [name]},
-                        "_name": name, "_val": round(w_mcc, 4), "_class": "Weighted_avg"})
+    weighted_avgs[name] = w_mcc
+    file2_rows.append({"EC_class": "Weighted_avg", **{name: w_mcc for name in [name]},
+                        "_name": name, "_val": w_mcc, "_class": "Weighted_avg"})
     for cls, mcc in per_class.items():
-        file2_rows.append({"_name": name, "_val": round(mcc, 4), "_class": cls})
-    print(f"  {name:<22}  w_MCC={w_mcc:.4f}  per_class={' '.join(f'{c}:{v:.3f}' for c,v in per_class.items())}")
+        file2_rows.append({"_name": name, "_val": mcc, "_class": cls})
+    print(f"  {name:<22}  w_MCC={w_mcc:.3f}  per_class={' '.join(f'{c}:{v:.3f}' for c,v in per_class.items())}")
 
 # Pivot to wide format
 records_dict = {"Weighted_avg": {"EC_class": "Weighted_avg"}}
@@ -154,16 +160,16 @@ for cls in "1234567":
 
 for name, (ts, ps) in model_data.items():
     w_mcc, _, _, per_class = evaluate(ts, ps, mlb, all_labels)
-    records_dict["Weighted_avg"][name] = round(w_mcc, 4)
+    records_dict["Weighted_avg"][name] = w_mcc
     for cls in "1234567":
-        records_dict[cls][name] = round(per_class.get(cls, float("nan")), 4)
+        records_dict[cls][name] = per_class.get(cls, float("nan"))
 
 file2_df = pd.DataFrame(
     [records_dict["Weighted_avg"]] + [records_dict[c] for c in "1234567"]
 )
-file2_df = file2_df[["EC_class"] + list(MODELS.keys())]
+file2_df = file2_df[["EC_class"] + list(model_data.keys())]
 out2 = SUMMARY / "per_class_mcc.csv"
-file2_df.to_csv(out2, index=False)
+file2_df.to_csv(out2, index=False, float_format="%.3f")
 print(f"\nSaved → {out2}\n")
 
 
@@ -185,13 +191,13 @@ for split, path in SPLIT_FILES.items():
     split_mlb.fit([split_labels])
 
     w_mcc, w_prec, w_rec, _ = evaluate(ts, ps, split_mlb, split_labels)
-    print(f"  Gemma4EC-9b {split:<12}  MCC={w_mcc:.4f}  PPV={w_prec:.4f}  Recall={w_rec:.4f}")
+    print(f"  Gemma4EC-9b {split:<12}  MCC={w_mcc:.3f}  PPV={w_prec:.3f}  Recall={w_rec:.3f}")
 
     split_rows.append({
         "Split": split,
-        "Gemma4EC-9b_MCC":    round(w_mcc,  4),
-        "Gemma4EC-9b_PPV":    round(w_prec, 4),
-        "Gemma4EC-9b_Recall": round(w_rec,  4),
+        "Gemma4EC-9b_MCC":    w_mcc,
+        "Gemma4EC-9b_PPV":    w_prec,
+        "Gemma4EC-9b_Recall": w_rec,
         "BEC-Pred_MCC":       BECPRED[split]["MCC"],
         "BEC-Pred_PPV":       BECPRED[split]["PPV"],
         "BEC-Pred_Recall":    BECPRED[split]["Recall"],
@@ -202,5 +208,5 @@ for split, path in SPLIT_FILES.items():
 
 file3_df = pd.DataFrame(split_rows)
 out3 = SUMMARY / "splits_weighted_mcc.csv"
-file3_df.to_csv(out3, index=False)
+file3_df.to_csv(out3, index=False, float_format="%.3f")
 print(f"\nSaved → {out3}")
