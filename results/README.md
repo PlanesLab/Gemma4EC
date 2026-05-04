@@ -10,7 +10,7 @@ Prediction outputs and evaluation metrics for all models benchmarked in Gemma4EC
 |---|---|
 | `summary/weighted_metrics.csv` | **Main benchmark table.** Overall support-weighted MCC, PPV, and Recall for every model at the sub-subclass level. |
 | `summary/per_class_mcc.csv` | Per-EC-class weighted MCC for all models (EC classes 1–7 plus overall). |
-| `summary/splits_weighted_mcc.csv` | Gemma4EC-9b vs Theia vs BEC-Pred across the three Rhea partition splits (Scaffold, Stratified, Time). |
+| `summary/splits_weighted_mcc.csv` | Gemma4EC-9b vs [Theia](https://github.com/daenuprobst/theia) vs [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) across the three [Rhea](https://www.rhea-db.org/) partition splits (Scaffold, Stratified, Time). |
 
 ---
 
@@ -34,7 +34,7 @@ No extra arguments needed — all paths are resolved relative to this folder.
 
 Produces two tables using the same weighted-MCC methodology:
 - `summary/per_class_mcc.csv` — weighted MCC broken down by EC class (1–7) for all models
-- `summary/splits_weighted_mcc.csv` — weighted MCC for Gemma4EC-9b on each Rhea split, alongside pre-computed BEC-Pred and Theia values
+- `summary/splits_weighted_mcc.csv` — weighted MCC for Gemma4EC-9b on each [Rhea](https://www.rhea-db.org/) split, alongside pre-computed [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) and [Theia](https://github.com/daenuprobst/theia) values
 
 ```bash
 cd results/

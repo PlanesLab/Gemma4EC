@@ -22,14 +22,14 @@ The API pipeline:
 ## Supported providers and models
 The benchmarking pipeline supports any model accessible through the official API clients.
 
-### OpenAI
+### [OpenAI](https://openai.com/es-ES/api/)
 Examples include:
 * `gpt-4.1`
 * `gpt-4.1-mini`
 * `gpt-5.1`
 * `gpt-5-mini`
 
-### Google Gemini
+### [Google Gemini](https://ai.google.dev/gemini-api/docs?hl=es-419)
 Examples include:
 
 * `gemini-2.5-flash`

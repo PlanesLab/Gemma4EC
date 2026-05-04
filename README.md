@@ -3,8 +3,8 @@
 <table>
   <tr>
     <td width="55%" valign="top">
-      Predict Enzyme Commission (EC) numbers directly from biochemical reaction SMILES using a fine-tuned large language model.<br><br>
-      Gemma4EC builds on <a href="https://developers.googleblog.com/en/introducing-txgemma-open-models-improving-therapeutics-development/">TxGemma</a> (Google's therapeutics LLM) and specializes it for EC annotation via lightweight LoRA adapters — no training from scratch required.<br><br>
+      Predict Enzyme Commission (EC) numbers directly from biochemical reaction SMILES using Gemma4EC, a fine-tuned large language model.<br><br>
+      Gemma4EC builds on <a href="https://deepmind.google/models/gemma/txgemma/">TxGemma</a> (Google's therapeutics LLM) and fine-tunes it for EC annotation via lightweight LoRA adapters.<br><br>
       <h2>Contents</h2>
       • <a href="#before-you-start">Before you start</a><br>
       • <a href="#installation">Installation</a><br>
@@ -34,7 +34,7 @@ You will need:
 
 **1. A Hugging Face account** — [sign up here](https://huggingface.co/join)
 
-**2. Access to TxGemma** — request it on the model page (usually approved in minutes):
+**2. Access to [TxGemma](https://deepmind.google/models/gemma/txgemma/)** — request it on the model page (usually approved in minutes):
 - [txgemma-9b-predict](https://huggingface.co/google/txgemma-9b-predict) — best accuracy
 - [txgemma-2b-predict](https://huggingface.co/google/txgemma-2b-predict) — lighter, lower VRAM
 
@@ -78,6 +78,8 @@ data/
     ├── Rhea_Stratified/ train / val / test
     └── Rhea_Time/       train / val / test
 ```
+
+The raw split is derived from [ECReact-1.0](https://github.com/rxn4chemistry/biocatalysis-model/blob/main/data/ecreact-1.0.csv), a curated dataset of enzyme-catalysed reactions in SMILES format. The three Rhea partitions are built from the same reactions re-split using [Rhea](https://www.rhea-db.org/) metadata (scaffold, stratified, time).
 
 Each CSV contains at minimum:
 
@@ -145,7 +147,7 @@ For an interactive demo see [`notebooks/predict_ec_numbers.ipynb`](notebooks/pre
 
 ## Zero-shot evaluation
 
-Evaluate the base TxGemma model without any fine-tuning:
+Evaluate the base [TxGemma](https://deepmind.google/models/gemma/txgemma/) model without any fine-tuning:
 
 ```bash
 python predict_zeroshot.py \
@@ -165,7 +167,7 @@ python predict_zeroshot.py \
 
 ## Fine-tuning
 
-Fine-tune TxGemma on your own reaction dataset using LoRA.
+Fine-tune [TxGemma](https://deepmind.google/models/gemma/txgemma/) on your own reaction dataset using LoRA.
 
 **Minimal usage:**
 ```bash
@@ -213,7 +215,7 @@ Full documentation: [`docs/training.md`](docs/training.md)
 
 ## Benchmark partitions
 
-To assess generalisation beyond random splits, we evaluate Gemma4EC on three Rhea partitions
+To assess generalisation beyond random splits, we evaluate Gemma4EC on three [Rhea](https://www.rhea-db.org/) partitions
 built from the same underlying dataset:
 
 | Partition | Split strategy | Challenge |
@@ -275,11 +277,11 @@ Benchmark on the standard test set (support-weighted MCC across all EC sub-subcl
 | Model | Overall MCC | EC1 | EC2 | EC3 | EC4 | EC5 | EC6 | EC7 |
 |---|---|---|---|---|---|---|---|---|
 | **Gemma4EC-9b** | **0.903** | 0.848 | 0.971 | 0.772 | 0.849 | 0.780 | 0.895 | 0.433 |
-| BEC-Pred | 0.886 | 0.799 | 0.965 | 0.777 | 0.834 | 0.681 | 0.869 | 0.314 |
+| [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) | 0.886 | 0.799 | 0.965 | 0.777 | 0.834 | 0.681 | 0.869 | 0.314 |
 | Gemma4EC-2b | 0.870 | 0.799 | 0.954 | 0.752 | 0.724 | 0.685 | 0.846 | 0.571 |
-| Gemini 2.5 Flash | 0.774 | 0.593 | 0.927 | 0.555 | 0.737 | 0.496 | 0.669 | 0.000 |
-| ChatGPT-5 (v2) | 0.531 | 0.354 | 0.721 | 0.317 | 0.181 | 0.383 | 0.180 | 0.000 |
-| TxGemma-9b (zero-shot) | ~0.000 | — | — | — | — | — | — | — |
+| [Gemini 2.5 Flash](https://ai.google.dev/gemini-api/docs?hl=es-419) | 0.774 | 0.593 | 0.927 | 0.555 | 0.737 | 0.496 | 0.669 | 0.000 |
+| [ChatGPT-5 (v2)](https://openai.com/es-ES/api/) | 0.531 | 0.354 | 0.721 | 0.317 | 0.181 | 0.383 | 0.180 | 0.000 |
+| [TxGemma-9b (zero-shot)](https://deepmind.google/models/gemma/txgemma/) | ~0.000 | — | — | — | — | — | — | — |
 
 Metrics computed with [`results/compute_weighted_metrics.py`](results/compute_weighted_metrics.py). Full per-class table: [`results/summary/per_class_mcc.csv`](results/summary/per_class_mcc.csv).
 

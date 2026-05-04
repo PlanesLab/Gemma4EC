@@ -18,11 +18,11 @@ They are intended as **templates**, not drop-in one-click scripts — adjust
 
 | Script | Purpose |
 |---|---|
-| `run_train_partition.sh` | Fine-tune TxGemma-9B + LoRA on a single Rhea partition |
+| `run_train_partition.sh` | Fine-tune [TxGemma](https://deepmind.google/models/gemma/txgemma/)-9B + LoRA on a single [Rhea](https://www.rhea-db.org/) partition |
 | `run_predict_partition.sh` | Re-evaluate a saved adapter on val + test (without retraining) |
 | `run_predict_zeroshot.sh` | Zero-shot EC prediction with base TxGemma (no adapter) |
-| `run_train_theia.sh` | Train the Theia MLP baseline from scratch |
-| `run_eval_theia.sh` | Evaluate a pre-trained Theia MLP on all splits |
+| `run_train_theia.sh` | Train the [Theia](https://github.com/daenuprobst/theia) MLP baseline from scratch |
+| `run_eval_theia.sh` | Evaluate a pre-trained [Theia](https://github.com/daenuprobst/theia) MLP on all splits |
 | `submit_all_partitions.sh` | Submit all three Rhea partition training jobs at once |
 | `run_train_gemma4ec_9b.sh` | Fine-tune on the raw (non-partitioned) dataset |
 | `run_predict_gemma4ec.sh` | Large-scale EC prediction with a local adapter |
@@ -83,7 +83,7 @@ sbatch slurm/run_predict_zeroshot.sh
 
 ---
 
-## Theia MLP baseline
+## [Theia](https://github.com/daenuprobst/theia) MLP baseline
 
 Train from scratch on the raw partition:
 ```bash

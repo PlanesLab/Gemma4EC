@@ -1,6 +1,6 @@
 # BEC-Pred 
 
-Code to train and evaluate [BEC-Pred](https://pubmed.ncbi.nlm.nih.gov/38556873/). Training and evaluation scripts were downloaded and adapted from https://github.com/KeeliaQWJ/BEC-Pred. 
+Code to train and evaluate [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) ([paper](https://pubmed.ncbi.nlm.nih.gov/38556873/)). Training and evaluation scripts were downloaded and adapted from the [BEC-Pred repository](https://github.com/KeeliaQWJ/BEC-Pred).
 
 ## Requirements
 
