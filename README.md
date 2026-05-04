@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td width="55%" valign="top">
-      Predict Enzyme Commission (EC) numbers directly from biochemical reaction SMILES using Gemma4EC, a fine-tuned large language model.<br><br>
+      Predict Enzyme Commission (EC) numbers from biochemical reaction SMILES using Gemma4EC, a fine-tuned large language model.<br><br>
       Gemma4EC builds on <a href="https://deepmind.google/models/gemma/txgemma/">TxGemma</a> (Google's therapeutics LLM) and fine-tunes it for EC annotation via lightweight LoRA adapters.<br><br>
       <h2>Contents</h2>
       • <a href="#before-you-start">Before you start</a><br>
