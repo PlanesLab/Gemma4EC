@@ -276,15 +276,15 @@ def parse_args():
         allow_abbrev=False,
     )
     ap.add_argument("--test_csv", type=str,
-                    default="./data/raw/test.csv",
+                    default="./data/ECReact/test.csv",
                     help="CSV file with rxn_smiles (and optionally ec) columns. "
-                         "(default: ./data/raw/test.csv)")
+                         "(default: ./data/ECReact/test.csv)")
     ap.add_argument("--output_folder", type=str,
                     default="./outputs/zeroshot",
                     help="Folder to save prediction TSVs. (default: ./outputs/zeroshot)")
     ap.add_argument("--prompts_json_path", type=str,
-                    default="./prompt_examples/prompts.json",
-                    help="Path to prompts.json. (default: ./prompt_examples/prompts.json)")
+                    default="./prompts/prompts.json",
+                    help="Path to prompts.json. (default: ./prompts/prompts.json)")
     ap.add_argument("--template_key", type=str,
                     default="EC_NUMBER_PROMPT_API",
                     help="Prompt key in prompts.json. (default: EC_NUMBER_PROMPT_API)")

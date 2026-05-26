@@ -45,7 +45,7 @@ API-based benchmarking uses a **dedicated prompt template** optimized for chat-s
 * Prompt templates are defined in:
 
 ```text
-prompt_examples/prompts.json
+prompts/prompts.json
 ```
 
 The API pipeline typically uses:
@@ -79,7 +79,7 @@ sbatch slurm/run_predict_api.sh gpt-5-mini
 The script defaults to using:
 
 ```text
-data/raw/test.csv
+data/ECReact/test.csv
 ```
 
 ---
@@ -94,7 +94,7 @@ raw_data_file="/path/to/raw/test.csv"
 processed_data_folder="/path/to/predict_run/api_processed"
 output_folder="/path/to/predict_run/api_results"
 
-prompts_json_path="prompt_examples/prompts.json"
+prompts_json_path="prompts/prompts.json"
 template_key="EC_NUMBER_PROMPT_API"
 template_alias="EC_NUMBER"
 ```
@@ -158,4 +158,4 @@ For fair comparisons, we recommend:
 ## Related documentation
 * Local and HPC prediction: `docs/prediction_hpc.md`
 * Training and fine-tuning: `docs/training.md`
-* Prompt templates: `prompt_examples/prompts.json`
+* Prompt templates: `prompts/prompts.json`

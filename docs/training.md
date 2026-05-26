@@ -34,7 +34,7 @@ CCO.CC(=O)O>>CCOC(=O)C,2.7.8
 Place the raw file in:
 
 ```text
-data/raw/raw_data.csv
+data/ECReact/raw_data.csv
 ```
 
 ---
@@ -77,7 +77,7 @@ Gemma4EC uses **instruction-style prompts** to frame EC prediction as a text-gen
 Prompt templates are defined in:
 
 ```text
-prompt_examples/prompts.json
+prompts/prompts.json
 ```
 
 During preprocessing, CSV data are converted into model-ready JSONL files of the form:
@@ -96,9 +96,9 @@ A minimal training invocation requires only a few arguments:
 
 ```bash
 python main.py \
-  --raw_data_folder       data/raw \
+  --raw_data_folder       data/ECReact \
   --processed_data_folder data/processed \
-  --prompts_json_path     prompt_examples/prompts.json \
+  --prompts_json_path     prompts/prompts.json \
   --template_key          EC_NUMBER_PROMPT_2 \
   --template_alias        EC_NUMBER
 ```

@@ -26,20 +26,22 @@ corresponding_labels = train_df.class_id.values.tolist()
 final_train_df = pd.DataFrame({'text': all_train_reactions, 'labels': corresponding_labels})
 final_train_df = final_train_df.sample(frac=1.)
 
+num_labels = len(pd.read_csv('./DB/ec_class_labels_ecreact.csv'))
+
 model_args = {
     'wandb_project': None, 'num_train_epochs': 48, 'overwrite_output_dir': True,
     'learning_rate': 1e-5, 'gradient_accumulation_steps': 1,
-    'regression': False, "num_labels": 304, "fp16": False,
+    'regression': False, "num_labels": num_labels, "fp16": False,
     "evaluate_during_training": True, 'manual_seed': 42,
     "max_seq_length": 512, "train_batch_size": 8,"warmup_ratio": 0.00,
-    'output_dir': './model/ecreact_model', 
+    'output_dir': './model/ecreact_model',
     'thread_count': 4,
     }
 
 # optional
 model_path =  "./model/pretrained"
 print(model_path)
-model = SmilesClassificationModel("bert", model_path, num_labels=304, args=model_args, use_cuda=torch.cuda.is_available())
+model = SmilesClassificationModel("bert", model_path, num_labels=num_labels, args=model_args, use_cuda=torch.cuda.is_available())
 
 
 def f1_multiclass(labels, preds):

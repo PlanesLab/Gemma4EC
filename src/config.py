@@ -80,15 +80,15 @@ class Config:
         d = vars(args).copy()
 
         # Resolve target_modules; fall back to defaults if not provided
-        tmods = d.get(“target_modules”)
+        tmods = d.get("target_modules")
         resolved = tmods if tmods else _DEFAULT_TARGET_MODULES
 
         # Normalize wandb_tags (may arrive as list, tuple, or string)
-        tags = d.get(“wandb_tags”)
+        tags = d.get("wandb_tags")
         if isinstance(tags, str):
             tags = [tags]
         elif tags is None:
-            tags = [“TxGemma”, “EC”]
+            tags = ["TxGemma", "EC"]
 
         return Config(
             raw_data_folder=d["raw_data_folder"],

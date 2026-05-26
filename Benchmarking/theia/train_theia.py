@@ -12,9 +12,9 @@ evaluates on the test set. Outputs are saved to --output_dir:
 
 Usage:
     python train_theia.py \
-        --train_csv data/raw/train.csv \
-        --val_csv   data/raw/val.csv \
-        --test_csv  data/raw/test.csv \
+        --train_csv data/ECReact/train.csv \
+        --val_csv   data/ECReact/val.csv \
+        --test_csv  data/ECReact/test.csv \
         --output_dir outputs/theia_raw
 """
 
@@ -282,9 +282,9 @@ def parse_args():
         description="Train Theia MLP on a raw CSV partition.",
         allow_abbrev=False,
     )
-    ap.add_argument("--train_csv",   type=str, default="data/raw/train.csv")
-    ap.add_argument("--val_csv",     type=str, default="data/raw/val.csv")
-    ap.add_argument("--test_csv",    type=str, default="data/raw/test.csv")
+    ap.add_argument("--train_csv",   type=str, default="data/ECReact/train.csv")
+    ap.add_argument("--val_csv",     type=str, default="data/ECReact/val.csv")
+    ap.add_argument("--test_csv",    type=str, default="data/ECReact/test.csv")
     ap.add_argument("--output_dir",  type=str, required=True,
                     help="Directory to save model, label encoder, metrics, and predictions.")
     ap.add_argument("--hidden_dim",  type=int, default=_HIDDEN_DIM)

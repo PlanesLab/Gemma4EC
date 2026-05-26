@@ -4,7 +4,8 @@ library(cowplot)
 
 df <- read.csv("/scratch/jarcagniriv/Gemma4EC/results/summary/weighted_metrics.csv")
 
-# ---- Reshape to long format ----
+# ---- Reshape to long format ----\]
+
 plot_df <- df %>%
   pivot_longer(
     cols = c(Weighted_MCC, Weighted_PPV, Weighted_Recall),

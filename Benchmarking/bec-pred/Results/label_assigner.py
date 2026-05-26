@@ -9,8 +9,8 @@ parser.add_argument("--output_csv", type=str, required=True, help="Path to outpu
 args = parser.parse_args()
 
 labels_path = args.labels
-with open(labels_path, 'rb') as f:
-    labels_dict = pickle.load(f)
+labels_df = pd.read_csv(labels_path)
+labels_dict = dict(zip(labels_df['Assigned Label'], labels_df['EC Class']))
 
 csv_path = args.input_csv
 df_predictions = pd.read_csv(csv_path)

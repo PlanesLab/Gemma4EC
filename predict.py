@@ -184,8 +184,8 @@ def parse_args():
                         default="./hfcache",
                         help="Hugging Face cache directory. (default: ./hfcache)")
     parser.add_argument("--prompts_json_path", type=str,
-                        default="./prompt_examples/prompts.json",
-                        help="Path to prompts.json. (default: ./prompt_examples/prompts.json)")
+                        default="./prompts/prompts.json",
+                        help="Path to prompts.json. (default: ./prompts/prompts.json)")
 
     # --- Model ---
     parser.add_argument("--model_id", type=str,

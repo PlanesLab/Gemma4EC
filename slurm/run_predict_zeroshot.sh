@@ -36,7 +36,7 @@ PROJECT_ROOT=${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
 SCRATCH_ROOT=${SCRATCH_ROOT:-/scratch/$USER}
 CACHE_ROOT=${CACHE_ROOT:-"$SCRATCH_ROOT/.cache/gemma4ec"}
 
-TEST_CSV="$PROJECT_ROOT/data/raw/test.csv"
+TEST_CSV="$PROJECT_ROOT/data/ECReact/test.csv"
 OUTPUT_FOLDER="$SCRATCH_ROOT/gemma4ec/zeroshot/results"
 
 MODEL_ID=${MODEL_ID:-"google/txgemma-9b-predict"}
@@ -107,7 +107,7 @@ mkdir -p "$OUTPUT_FOLDER" logs
 "$PYTHON" "$PROJECT_ROOT/predict_zeroshot.py" \
     --test_csv "$TEST_CSV" \
     --output_folder "$OUTPUT_FOLDER" \
-    --prompts_json_path "$PROJECT_ROOT/prompt_examples/prompts.json" \
+    --prompts_json_path "$PROJECT_ROOT/prompts/prompts.json" \
     --template_key "EC_NUMBER_PROMPT_2" \
     --template_alias "EC_NUMBER" \
     --model_id "$MODEL_ID" \

@@ -53,7 +53,7 @@ OUTPUT_FOLDER="$SCRATCH_ROOT/gemma4ec/$DB_NAME/results"
 
 MODEL_ID=${MODEL_ID:-"google/txgemma-9b-predict"}
 SAVE_DIRECTORY="$SCRATCH_ROOT/gemma4ec/base_models/txgemma_9b"
-PROMPTS_JSON="$PROJECT_ROOT/prompt_examples/prompts.json"
+PROMPTS_JSON="$PROJECT_ROOT/prompts/prompts.json"
 TEMPLATE_KEY="EC_NUMBER_PROMPT_2"
 TEMPLATE_ALIAS="EC_NUMBER"
 EVAL_BATCH_SIZE=8

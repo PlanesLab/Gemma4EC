@@ -126,7 +126,7 @@ Using a different prompt template for inference is **not recommended** unless a 
 Alternative prompt templates used during development are provided in:
 
 ```text
-prompt_examples/prompts.json
+prompts/prompts.json
 ```
 
 These templates are intended for **research and retraining purposes only**.

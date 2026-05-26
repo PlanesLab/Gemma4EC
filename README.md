@@ -69,7 +69,7 @@ All datasets are included in this repository under `data/`.
 
 ```
 data/
-├── raw/
+├── ECReact/
 │   ├── train.csv   (~49 k reactions)
 │   ├── val.csv     (~6 k reactions)
 │   └── test.csv    (~6 k reactions)
@@ -79,7 +79,7 @@ data/
     └── Rhea_Time/       train / val / test
 ```
 
-The raw split is derived from [ECReact-1.0](https://github.com/rxn4chemistry/biocatalysis-model/blob/main/data/ecreact-1.0.csv), a curated dataset of enzyme-catalysed reactions in SMILES format. The three Rhea partitions are built from the same reactions re-split using [Rhea](https://www.rhea-db.org/) metadata (scaffold, stratified, time).
+The ECReact split is derived from [ECReact-1.0](https://github.com/rxn4chemistry/biocatalysis-model/blob/main/data/ecreact-1.0.csv), a curated dataset of enzyme-catalysed reactions in SMILES format. The three Rhea partitions are built from the same reactions re-split using [Rhea](https://www.rhea-db.org/) metadata (scaffold, stratified, time).
 
 Each CSV contains at minimum:
 
@@ -89,7 +89,7 @@ Each CSV contains at minimum:
 | `ec` | EC number label (e.g. `1.1.1.1`) |
 
 The three Rhea partitions are described in the [Benchmark partitions](#benchmark-partitions) section.
-To regenerate partition splits from raw data, see [`scripts/prepare_db.py`](scripts/prepare_db.py).
+To regenerate partition splits from `data/ECReact/`, see [`scripts/prepare_db.py`](scripts/prepare_db.py).
 
 ---
 
@@ -141,7 +141,9 @@ python predict.py \
 | `--output_folder` | `./outputs/results` | Where to save the prediction TSV |
 | `--eval_batch_size` | `8` | Reduce if you run out of VRAM |
 
-For an interactive demo see [`notebooks/predict_ec_numbers.ipynb`](notebooks/predict_ec_numbers.ipynb).
+For an interactive prediction demo see [`notebooks/predict_ec_numbers.ipynb`](notebooks/predict_ec_numbers.ipynb).
+
+For attention-based mechanistic explanation (predict → attention heatmap → 4-turn TxGemma-Chat dialogue) see [`notebooks/mechanistic_explanation.ipynb`](notebooks/mechanistic_explanation.ipynb).
 
 ---
 
@@ -151,13 +153,13 @@ Evaluate the base [TxGemma](https://deepmind.google/models/gemma/txgemma/) model
 
 ```bash
 python predict_zeroshot.py \
-  --test_csv data/raw/test.csv \
+  --test_csv data/ECReact/test.csv \
   --output_folder outputs/zeroshot
 ```
 
 | Argument | Default | Description |
 |---|---|---|
-| `--test_csv` | `data/raw/test.csv` | Input CSV |
+| `--test_csv` | `data/ECReact/test.csv` | Input CSV |
 | `--output_folder` | `./outputs/zeroshot` | Output directory |
 | `--eval_batch_size` | `16` | Batch size for generation |
 | `--max_retries` | `5` | Per-sample retries for malformed outputs |
@@ -172,14 +174,14 @@ Fine-tune [TxGemma](https://deepmind.google/models/gemma/txgemma/) on your own r
 **Minimal usage:**
 ```bash
 python main.py \
-  --raw_data_folder data/raw \
+  --raw_data_folder data/ECReact \
   --disable_wandb
 ```
 
 **Full example (with W&B logging):**
 ```bash
 python main.py \
-  --raw_data_folder data/raw \
+  --raw_data_folder data/ECReact \
   --model_id google/txgemma-9b-predict \
   --num_train_epochs 30 \
   --batch_size 8 \
@@ -224,7 +226,7 @@ built from the same underlying dataset:
 | **Rhea_Stratified** | Stratified random split preserving EC class balance | Standard baseline |
 | **Rhea_Time** | Chronological split by reaction entry date | Temporal generalisation |
 
-Data for all three partitions is in `data/partitions/`. To re-generate them from `data/raw/`:
+Data for all three partitions is in `data/partitions/`. To re-generate them from `data/ECReact/`:
 
 ```bash
 python scripts/prepare_db.py --db Rhea_Scaffold   --out_root data/partitions
@@ -244,21 +246,39 @@ python scripts/summarize_results.py
 
 For running on a cluster, all workflows have matching SLURM scripts in `slurm/`.
 
-**Fine-tune on all three partitions:**
+**Fine-tune Gemma4EC-9B on all three partitions:**
 ```bash
 export HUGGINGFACE_TOKEN=hf_...
 export WANDB_API_KEY=...
 bash slurm/submit_all_partitions.sh
 ```
 
-**Single partition:**
+**Fine-tune Gemma4EC-2B on all three partitions:**
 ```bash
-sbatch --export=ALL,DB_NAME=Rhea_Time slurm/run_train_partition.sh
+bash slurm/submit_all_partitions_2b.sh
+```
+
+**Theia baseline on all three partitions:**
+```bash
+bash slurm/submit_all_partitions_theia.sh
+```
+
+**BEC-Pred baseline on all three partitions:**
+```bash
+bash slurm/submit_all_partitions_becpred.sh
+```
+
+**Single partition (any model):**
+```bash
+DB_NAME=Rhea_Time sbatch slurm/run_train_partition.sh    # 9B
+DB_NAME=Rhea_Time sbatch slurm/run_train_partition_2b.sh # 2B
+DB_NAME=Rhea_Time sbatch slurm/run_train_theia.sh        # Theia
+DB_NAME=Rhea_Time sbatch slurm/run_becpred.sh            # BEC-Pred
 ```
 
 **Re-evaluate a saved checkpoint (no retraining):**
 ```bash
-sbatch --export=ALL,DB_NAME=Rhea_Time slurm/run_predict_partition.sh
+DB_NAME=Rhea_Time sbatch slurm/run_predict_partition.sh
 ```
 
 **Zero-shot baseline:**
@@ -295,11 +315,12 @@ gemma4ec/
 ├── main.py                        # LoRA fine-tuning entry point
 ├── predict.py                     # Inference with a LoRA adapter
 ├── predict_zeroshot.py            # Zero-shot inference (no adapter)
-├── train_theia.py                 # Theia MLP baseline — train from scratch
+├── infer_attention.py             # BertViz attention visualisation
+├── train_theia.py                 # Theia MLP baseline — train
 ├── eval_theia.py                  # Theia MLP baseline — evaluate
 │
 ├── data/
-│   ├── raw/                       # Full dataset (train / val / test CSVs)
+│   ├── ECReact/                   # Full dataset from ECReact-1.0 (train / val / test CSVs)
 │   └── partitions/                # Rhea_Scaffold / Rhea_Stratified / Rhea_Time splits
 │
 ├── envs/
@@ -307,7 +328,7 @@ gemma4ec/
 │
 ├── figures/                       # Paper figures
 │
-├── prompt_examples/
+├── prompts/
 │   └── prompts.json               # Prompt templates (few-shot, zero-shot, etc.)
 │
 ├── results/
@@ -319,21 +340,31 @@ gemma4ec/
 │   │   ├── weighted_metrics.csv           # All models — overall weighted MCC/PPV/Recall
 │   │   ├── per_class_mcc.csv              # All models — MCC per EC class (1–7)
 │   │   └── splits_weighted_mcc.csv        # Rhea splits — Gemma4EC / BEC-Pred / Theia
+│   ├── ECReact/                           # Gemma4EC-9b fine-tuned on ECReact (gitignored)
 │   ├── Rhea_Scaffold/                     # Gemma4EC-9b fine-tuned on Rhea_Scaffold
 │   ├── Rhea_Stratified/                   # Gemma4EC-9b fine-tuned on Rhea_Stratified
 │   └── Rhea_Time/                         # Gemma4EC-9b fine-tuned on Rhea_Time
 │
 ├── scripts/
 │   ├── prepare_db.py              # Generate Rhea partition splits
-│   └── summarize_results.py       # Aggregate metrics across all models
+│   ├── canonicalize_smiles.py     # Canonicalize rxn_smiles in all data CSVs
+│   ├── summarize_results.py       # Aggregate metrics across all models
+│   ├── slim_bertviz.py            # Slim down BertViz HTML output files
+│   └── make_attn_plotly.py        # Generate Plotly attention visualisations
 │
 ├── slurm/
-│   ├── run_train_partition.sh     # Fine-tune on a Rhea partition
-│   ├── run_predict_partition.sh   # Evaluate a saved adapter
-│   ├── run_predict_zeroshot.sh    # Zero-shot evaluation
-│   ├── run_train_theia.sh         # Train Theia baseline
-│   ├── run_eval_theia.sh          # Evaluate Theia baseline
-│   ├── submit_all_partitions.sh   # Submit all three partition jobs
+│   ├── run_train_partition.sh        # Fine-tune TxGemma-9B on one Rhea partition
+│   ├── submit_all_partitions.sh      # Submit all three 9B partition jobs
+│   ├── run_train_partition_2b.sh     # Fine-tune TxGemma-2B on one Rhea partition
+│   ├── submit_all_partitions_2b.sh   # Submit all three 2B partition jobs
+│   ├── run_predict_partition.sh      # Evaluate a saved 9B adapter (no retraining)
+│   ├── run_predict_zeroshot.sh       # Zero-shot evaluation (no adapter)
+│   ├── run_train_theia.sh            # Train Theia baseline on one partition
+│   ├── submit_all_partitions_theia.sh# Submit all three Theia partition jobs
+│   ├── run_eval_theia.sh             # Evaluate a pre-trained Theia model
+│   ├── run_becpred.sh                # Run BEC-Pred pipeline on one partition
+│   ├── submit_all_partitions_becpred.sh # Submit all three BEC-Pred partition jobs
+│   ├── run_predict_api.sh            # API benchmarking (OpenAI / Gemini)
 │   └── README.md
 │
 ├── src/
@@ -342,10 +373,12 @@ gemma4ec/
 │   ├── evaluation/                # Evaluation loop, EC parsing, metrics saving
 │   ├── models/                    # Model loading, PEFT config
 │   ├── training/                  # SFT trainer, manual DDP loop, callbacks, checkpointing
-│   └── utils/                     # Metrics, path helpers, sequence length checks
+│   ├── utils/                     # Metrics, path helpers, sequence length checks
+│   └── bec-pred/                  # BEC-Pred baseline (see src/bec-pred/README.md)
 │
 ├── notebooks/
-│   └── predict_ec_numbers.ipynb   # Interactive prediction demo
+│   ├── predict_ec_numbers.ipynb       # Interactive prediction demo
+│   └── mechanistic_explanation.ipynb  # Attention heatmap + TxGemma-Chat mechanism
 │
 └── docs/
     ├── training.md

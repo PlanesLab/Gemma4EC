@@ -26,7 +26,7 @@ SCRATCH_ROOT=${SCRATCH_ROOT:-/scratch/$USER}
 MODEL_NAME=${1:-"gpt-5-mini"}
 ARG2=${2:-""}
 
-DATA_ROOT=${DATA_ROOT:-"$PROJECT_ROOT/data/raw"}
+DATA_ROOT=${DATA_ROOT:-"$PROJECT_ROOT/data/ECReact"}
 
 # =======================
 # RESOLVE INPUT CSV
@@ -48,7 +48,7 @@ fi
 PROCESSED_DATA_FOLDER=${PROCESSED_DATA_FOLDER:-"$SCRATCH_ROOT/gemma4ec/api_predict/processed_${SPLIT_NAME}"}
 OUTPUT_FOLDER=${OUTPUT_FOLDER:-"$SCRATCH_ROOT/gemma4ec/api_predict/results_${SPLIT_NAME}"}
 
-PROMPTS_JSON=${PROMPTS_JSON:-"$PROJECT_ROOT/prompt_examples/prompts.json"}
+PROMPTS_JSON=${PROMPTS_JSON:-"$PROJECT_ROOT/prompts/prompts.json"}
 TEMPLATE_KEY="EC_NUMBER_PROMPT_API"
 TEMPLATE_ALIAS="EC_NUMBER"
 

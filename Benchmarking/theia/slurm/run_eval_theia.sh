@@ -3,7 +3,7 @@
 # run_eval_theia.sh
 #
 # Evaluate the pre-trained Theia MLP baseline on all data splits
-# (train, val, test) using data/raw/*.csv.
+# (train, val, test) using data/ECReact/*.csv.
 #
 # Usage:
 #   sbatch slurm/run_eval_theia.sh
@@ -34,7 +34,7 @@ PROJECT_ROOT=${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
 SCRATCH_ROOT=${SCRATCH_ROOT:-/scratch/$USER}
 CACHE_ROOT=${CACHE_ROOT:-"$SCRATCH_ROOT/.cache/gemma4ec"}
 
-DATA_ROOT="$PROJECT_ROOT/data/raw"
+DATA_ROOT="$PROJECT_ROOT/data/ECReact"
 OUTPUT_DIR=${OUTPUT_DIR:-"$SCRATCH_ROOT/gemma4ec/theia/results"}
 
 # Path to model.pt and label_encoder.pkl saved by run_train_theia.sh
@@ -44,7 +44,7 @@ THEIA_LE=${THEIA_LE:-"$SCRATCH_ROOT/gemma4ec/theia_raw/results/label_encoder.pkl
 # ============================================================
 # ENVIRONMENT
 # ============================================================
-CONDA_ENV=${CONDA_ENV:-/scratch/$USER/conda_envs/gemma4ec}
+CONDA_ENV=${CONDA_ENV:-/scratch/$USER/Envs/gemma4ec}
 PYTHON="$CONDA_ENV/bin/python"
 export PATH="$CONDA_ENV/bin:$PATH"
 export PYTHONPATH="$PROJECT_ROOT:${PYTHONPATH:-}"

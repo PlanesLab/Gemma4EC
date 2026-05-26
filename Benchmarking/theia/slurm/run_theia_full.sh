@@ -32,10 +32,10 @@ echo "Host        : $(hostname)"
 echo "=========================================="
 
 PROJECT_ROOT=/scratch/jarcagniriv/Gemma4EC
-PYTHON=/scratch/jarcagniriv/Envs/conda_envs/gemma4ec/bin/python
+PYTHON=/scratch/jarcagniriv/Envs/gemma4ec/bin/python
 THEIA_OUTPUT_DIR=/scratch/jarcagniriv/gemma4ec/theia_raw/results
 THEIA_RESULTS_DIR=$PROJECT_ROOT/results/Theia
-DATA_ROOT=$PROJECT_ROOT/data/raw
+DATA_ROOT=$PROJECT_ROOT/data/ECReact
 
 export PYTHONPATH="$PROJECT_ROOT:${PYTHONPATH:-}"
 

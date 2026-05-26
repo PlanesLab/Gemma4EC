@@ -1,7 +1,6 @@
 # SLURM scripts for Gemma4EC
 
-This directory contains **SLURM job templates** for running Gemma4EC on
-high-performance computing (HPC) systems.
+This directory contains **SLURM job templates** for running Gemma4EC and all baseline models on high-performance computing (HPC) systems.
 
 The scripts are designed to be:
 - portable across clusters,
@@ -16,17 +15,45 @@ They are intended as **templates**, not drop-in one-click scripts — adjust
 
 ## Available scripts
 
+### Gemma4EC fine-tuning (TxGemma-9B)
+
 | Script | Purpose |
 |---|---|
-| `run_train_partition.sh` | Fine-tune [TxGemma](https://deepmind.google/models/gemma/txgemma/)-9B + LoRA on a single [Rhea](https://www.rhea-db.org/) partition |
-| `run_predict_partition.sh` | Re-evaluate a saved adapter on val + test (without retraining) |
-| `run_predict_zeroshot.sh` | Zero-shot EC prediction with base TxGemma (no adapter) |
-| `run_train_theia.sh` | Train the [Theia](https://github.com/daenuprobst/theia) MLP baseline from scratch |
-| `run_eval_theia.sh` | Evaluate a pre-trained [Theia](https://github.com/daenuprobst/theia) MLP on all splits |
-| `submit_all_partitions.sh` | Submit all three Rhea partition training jobs at once |
+| `run_train_partition.sh` | Fine-tune [TxGemma](https://deepmind.google/models/gemma/txgemma/)-9B + LoRA on a single Rhea partition |
+| `submit_all_partitions.sh` | Submit all three Rhea partition training jobs (9B) at once |
+| `run_predict_partition.sh` | Re-evaluate a saved 9B adapter on val + test (no retraining) |
 | `run_train_gemma4ec_9b.sh` | Fine-tune on the raw (non-partitioned) dataset |
-| `run_predict_gemma4ec.sh` | Large-scale EC prediction with a local adapter |
+
+### Gemma4EC fine-tuning (TxGemma-2B)
+
+| Script | Purpose |
+|---|---|
+| `run_train_partition_2b.sh` | Fine-tune [TxGemma](https://deepmind.google/models/gemma/txgemma/)-2B + LoRA on a single Rhea partition |
+| `submit_all_partitions_2b.sh` | Submit all three Rhea partition training jobs (2B) at once |
+
+### Zero-shot and API evaluation
+
+| Script | Purpose |
+|---|---|
+| `run_predict_zeroshot.sh` | Zero-shot EC prediction with base TxGemma (no adapter) |
+| `run_predict_gemma4ec.sh` | Large-scale EC prediction with a saved local adapter |
 | `run_predict_api.sh` | Benchmark via external LLM APIs (OpenAI / Gemini) |
+
+### Theia MLP baseline
+
+| Script | Purpose |
+|---|---|
+| `run_train_theia.sh` | Train the [Theia](https://github.com/daenuprobst/theia) MLP on a single partition (`DB_NAME`) |
+| `submit_all_partitions_theia.sh` | Submit all three Rhea partition Theia training jobs |
+| `run_eval_theia.sh` | Evaluate a pre-trained Theia MLP on all splits |
+| `run_theia_full.sh` | Full Theia pipeline on the raw partition (train + eval + summaries) |
+
+### BEC-Pred baseline
+
+| Script | Purpose |
+|---|---|
+| `run_becpred.sh` | Run the full [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) pipeline on a single partition (`DB_NAME`) |
+| `submit_all_partitions_becpred.sh` | Submit all three Rhea partition BEC-Pred jobs |
 
 ---
 
@@ -56,7 +83,7 @@ Never commit API keys to the repository.
 
 ## Partition fine-tuning workflow
 
-Submit all three Rhea partitions (Scaffold / Stratified / Time) in one go:
+### Gemma4EC-9B on all partitions
 ```bash
 export HUGGINGFACE_TOKEN=hf_...
 export WANDB_API_KEY=...
@@ -64,14 +91,24 @@ export WANDB_API_KEY=...
 bash slurm/submit_all_partitions.sh
 ```
 
-Or submit a single partition:
+Single partition:
 ```bash
-sbatch --export=ALL,DB_NAME=Rhea_Time slurm/run_train_partition.sh
+DB_NAME=Rhea_Time sbatch slurm/run_train_partition.sh
 ```
 
-After training completes, re-run evaluation on val + test with the best checkpoint:
+Re-evaluate best checkpoint (no retraining):
 ```bash
-sbatch --export=ALL,DB_NAME=Rhea_Time slurm/run_predict_partition.sh
+DB_NAME=Rhea_Time sbatch slurm/run_predict_partition.sh
+```
+
+### Gemma4EC-2B on all partitions
+```bash
+bash slurm/submit_all_partitions_2b.sh
+```
+
+Single partition:
+```bash
+DB_NAME=Rhea_Time sbatch slurm/run_train_partition_2b.sh
 ```
 
 ---
@@ -83,11 +120,16 @@ sbatch slurm/run_predict_zeroshot.sh
 
 ---
 
-## [Theia](https://github.com/daenuprobst/theia) MLP baseline
+## Theia MLP baseline
 
-Train from scratch on the raw partition:
+Train on all three partitions:
 ```bash
-sbatch slurm/run_train_theia.sh
+bash slurm/submit_all_partitions_theia.sh
+```
+
+Single partition:
+```bash
+DB_NAME=Rhea_Scaffold sbatch slurm/run_train_theia.sh
 ```
 
 Evaluate a pre-trained Theia model:
@@ -97,8 +139,52 @@ sbatch slurm/run_eval_theia.sh
 
 ---
 
+## BEC-Pred baseline
+
+Train on all three partitions:
+```bash
+bash slurm/submit_all_partitions_becpred.sh
+```
+
+Single partition:
+```bash
+DB_NAME=Rhea_Scaffold sbatch slurm/run_becpred.sh
+```
+
+Results are written to `$SCRATCH/gemma4ec/becpred_<DB_NAME>/Results/`.
+
+---
+
+## Reproducing all results (paper)
+
+The following sequence reproduces all benchmark results reported in the paper:
+
+```bash
+# 0. Canonicalize SMILES in all data splits (run once)
+python scripts/canonicalize_smiles.py
+
+# 1. Fine-tune Gemma4EC-9B and 2B on all partitions
+export HUGGINGFACE_TOKEN=hf_...
+export WANDB_API_KEY=...
+bash slurm/submit_all_partitions.sh
+bash slurm/submit_all_partitions_2b.sh
+
+# 2. Theia and BEC-Pred baselines
+bash slurm/submit_all_partitions_theia.sh
+bash slurm/submit_all_partitions_becpred.sh
+
+# 3. Zero-shot baselines
+sbatch slurm/run_predict_zeroshot.sh
+
+# 4. Aggregate metrics
+python results/compute_weighted_metrics.py
+python results/compute_per_class_and_splits.py
+```
+
+---
+
 ## Notes
-- Scripts assume a Conda environment at `CONDA_ENV` (default: `/scratch/$USER/conda_envs/gemma4ec`)
+- Scripts assume a Conda environment at `CONDA_ENV` (default: `/scratch/$USER/Envs/gemma4ec`)
 - Resource requests (`--gres`, `--mem`, `--time`, `--constraint`) may need adjustment for your cluster
-- Multi-GPU training uses 🤗 Accelerate with `--num_processes $(nvidia-smi --list-gpus | wc -l)`
-- For detailed workflow documentation see `docs/training.md` and `docs/prediction_hpc.md`
+- Multi-GPU training uses Accelerate (`--num_processes` auto-detected from `nvidia-smi`)
+- For detailed workflow documentation see [`docs/training.md`](../docs/training.md) and [`docs/prediction_hpc.md`](../docs/prediction_hpc.md)

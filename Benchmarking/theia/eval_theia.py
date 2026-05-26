@@ -6,7 +6,7 @@ runs the Theia MLPClassifier, and writes a TSV compatible with summarize_results
 
 Usage:
     python eval_theia.py \
-        --input_csv    data/raw/test.csv \
+        --input_csv    data/ECReact/test.csv \
         --output_tsv   outputs/theia/theia_test.tsv \
         --model_pt     outputs/theia_raw/model.pt \
         --labelenc_pkl outputs/theia_raw/label_encoder.pkl
@@ -14,7 +14,7 @@ Usage:
     # all three splits:
     for SPLIT in train val test; do
         python eval_theia.py \
-            --input_csv    data/raw/${SPLIT}.csv \
+            --input_csv    data/ECReact/${SPLIT}.csv \
             --output_tsv   outputs/theia/theia_${SPLIT}.tsv \
             --model_pt     outputs/theia_raw/model.pt \
             --labelenc_pkl outputs/theia_raw/label_encoder.pkl

@@ -62,16 +62,18 @@ OUTPUT_FOLDER="$SCRATCH_ROOT/gemma4ec/$DB_NAME/results"
 MODEL_ID=${MODEL_ID:-"google/txgemma-9b-predict"}
 SAVE_DIRECTORY=${SAVE_DIRECTORY:-"$SCRATCH_ROOT/gemma4ec/base_models/txgemma_9b"}
 
-PROMPTS_JSON="$PROJECT_ROOT/prompt_examples/prompts.json"
+PROMPTS_JSON="$PROJECT_ROOT/prompts/prompts.json"
 
 # ============================================================
-# W&B  ← SET YOUR ENTITY AND PROJECT HERE
-# NOTE: if your W&B account has personal entities disabled (403 error),
-# pass a team entity instead:
-#   sbatch --export=ALL,...,WANDB_ENTITY=your-team slurm/run_train_partition.sh
+# W&B  ← CHANGE WANDB_ENTITY TO YOUR USERNAME OR TEAM
+# Default is the paper's team — override it for your own runs:
+#   export WANDB_ENTITY=your-username
+#   bash slurm/submit_all_partitions.sh
+# Or per-job:
+#   sbatch --export=ALL,DB_NAME=Rhea_Scaffold,WANDB_ENTITY=your-username slurm/run_train_partition.sh
 # ============================================================
 WANDB_PROJECT=${WANDB_PROJECT:-"Gemma4EC-partitions"}
-WANDB_ENTITY=${WANDB_ENTITY:-"miramon_team"}
+WANDB_ENTITY=${WANDB_ENTITY:-"miramon_team"}   # ← change this
 WANDB_GROUP="$DB_NAME"                               # groups runs by partition in W&B
 WANDB_RUN_NAME="${DB_NAME}_$(date +%m%d_%H%M)"       # e.g. Rhea_Scaffold_0414_1530
 
@@ -124,7 +126,7 @@ USE_TEST=True
 # ============================================================
 # ENVIRONMENT
 # ============================================================
-CONDA_ENV=${CONDA_ENV:-/scratch/$USER/conda_envs/gemma4ec}
+CONDA_ENV=${CONDA_ENV:-/scratch/$USER/Envs/gemma4ec}
 PYTHON="$CONDA_ENV/bin/python"
 
 export PATH="$CONDA_ENV/bin:$PATH"
@@ -194,7 +196,13 @@ mkdir -p "$PROCESSED_DATA_FOLDER" "$OUTPUT_FOLDER" logs
 # ============================================================
 # LAUNCH TRAINING
 # ============================================================
-NUM_GPUS=$(nvidia-smi --list-gpus | wc -l)
+if [[ -n "${SLURM_GPUS_ON_NODE:-}" ]]; then
+    NUM_GPUS="$SLURM_GPUS_ON_NODE"
+elif command -v nvidia-smi &>/dev/null; then
+    NUM_GPUS=$(nvidia-smi --list-gpus | wc -l)
+else
+    NUM_GPUS=4  # fallback: matches --gres=gpu:4
+fi
 echo "[train] Launching on $NUM_GPUS GPUs"
 
 "$PYTHON" -m accelerate.commands.launch \

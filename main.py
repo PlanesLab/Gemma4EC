@@ -287,8 +287,8 @@ def parse_args():
 
     # --- Prompts ---
     parser.add_argument("--prompts_json_path", type=str,
-                        default="./prompt_examples/prompts.json",
-                        help="Path to prompts.json. (default: ./prompt_examples/prompts.json)")
+                        default="./prompts/prompts.json",
+                        help="Path to prompts.json. (default: ./prompts/prompts.json)")
     parser.add_argument("--template_key", type=str,
                         default="EC_NUMBER_PROMPT_1",
                         help="Prompt template key in prompts.json. (default: EC_NUMBER_PROMPT_1)")

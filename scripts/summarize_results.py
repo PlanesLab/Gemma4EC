@@ -22,7 +22,7 @@ Usage:
         --search_dirs outputs/Rhea_Scaffold/results \\
                       outputs/zeroshot/results \\
                       results \\
-        --true_csv data/raw/test.csv \\
+        --true_csv data/ECReact/test.csv \\
         --output_dir results/summary
 """
 

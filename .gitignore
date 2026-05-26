@@ -32,7 +32,6 @@ models/
 *.bin
 
 # Generated / intermediate data
-data/partitions/Raw/
 outputs/
 */processed/
 
@@ -46,7 +45,7 @@ tea_debug.log
 results/Gemma4EC-2b/
 results/Gemma4EC-9b/
 results/APIs/
-results/Raw/
+results/ECReact/
 results/Rhea_Scaffold/
 results/Rhea_Stratified/
 results/Rhea_Time/

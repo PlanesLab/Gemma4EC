@@ -2,16 +2,16 @@
 # ============================================================
 # run_train_theia.sh
 #
-# Train the Theia MLP baseline on the Raw partition
-# (data/raw/train.csv + data/raw/val.csv), then evaluate on test.
+# Train the Theia MLP baseline on a given partition.
+# Set DB_NAME to one of: Rhea_Scaffold, Rhea_Stratified, Rhea_Time, Raw
 #
 # Usage:
-#   sbatch slurm/run_train_theia.sh
+#   DB_NAME=Rhea_Scaffold sbatch slurm/run_train_theia.sh
 # ============================================================
 
 #SBATCH --job-name=theia_train
 #SBATCH --partition=general
-#SBATCH --qos=long
+#SBATCH --qos=xlong
 #SBATCH --time=06:00:00
 #SBATCH --nodes=1
 #SBATCH --gres=gpu:1
@@ -19,12 +19,14 @@
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64GB
-#SBATCH --output=logs/theia_train_%j.out
+#SBATCH --output=logs/theia_%x_%j.out
 
 set -euo pipefail
 
+DB_NAME=${DB_NAME:-Raw}
+
 echo "=========================================="
-echo "Theia MLP training (Raw partition)"
+echo "Theia MLP training (partition: $DB_NAME)"
 echo "Job started    : $(date)"
 echo "Host           : $(hostname)"
 echo "=========================================="
@@ -35,13 +37,13 @@ echo "=========================================="
 PROJECT_ROOT=${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
 SCRATCH_ROOT=${SCRATCH_ROOT:-/scratch/$USER}
 
-DATA_ROOT="$PROJECT_ROOT/data/raw"
-OUTPUT_DIR="$SCRATCH_ROOT/gemma4ec/theia_raw/results"
+DATA_ROOT="$PROJECT_ROOT/data/partitions/$DB_NAME"
+OUTPUT_DIR="$SCRATCH_ROOT/gemma4ec/theia_$DB_NAME/results"
 
 # ============================================================
 # ENVIRONMENT
 # ============================================================
-CONDA_ENV=${CONDA_ENV:-/scratch/$USER/conda_envs/gemma4ec}
+CONDA_ENV=${CONDA_ENV:-/scratch/$USER/Envs/gemma4ec}
 PYTHON="$CONDA_ENV/bin/python"
 export PATH="$CONDA_ENV/bin:$PATH"
 export PYTHONPATH="$PROJECT_ROOT:${PYTHONPATH:-}"
