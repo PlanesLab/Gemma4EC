@@ -136,9 +136,9 @@ def parse_args():
     p.add_argument("--train_csv",   default="data/ECReact/train.csv")
     p.add_argument("--val_csv",     default="data/ECReact/val.csv")
     p.add_argument("--model_id",    default="google/txgemma-9b-chat")
-    p.add_argument("--save_dir",    default="/scratch/jarcagniriv/gemma4ec/chat/base_model",
+    p.add_argument("--save_dir",    default="./chat/base_model",
                    help="Where to cache the downloaded base model weights")
-    p.add_argument("--output_dir",  default="/scratch/jarcagniriv/gemma4ec/chat/checkpoints")
+    p.add_argument("--output_dir",  default="./chat/checkpoints")
     p.add_argument("--hf_token",    default=None)
     # LoRA — keep rank low to preserve conversational ability
     p.add_argument("--lora_r",       type=int,   default=8)

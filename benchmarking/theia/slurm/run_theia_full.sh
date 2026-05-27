@@ -31,9 +31,9 @@ echo "Job started : $(date)"
 echo "Host        : $(hostname)"
 echo "=========================================="
 
-PROJECT_ROOT=/scratch/jarcagniriv/Gemma4EC
-PYTHON=/scratch/jarcagniriv/Envs/gemma4ec/bin/python
-THEIA_OUTPUT_DIR=/scratch/jarcagniriv/gemma4ec/theia_raw/results
+PROJECT_ROOT=${PROJECT_ROOT:-$PWD}
+PYTHON=${PYTHON:-python}
+THEIA_OUTPUT_DIR=${THEIA_OUTPUT_DIR:-$SCRATCH_ROOT/gemma4ec/theia/results}
 THEIA_RESULTS_DIR=$PROJECT_ROOT/results/Theia
 DATA_ROOT=$PROJECT_ROOT/data/ECReact
 

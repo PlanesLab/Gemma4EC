@@ -27,7 +27,7 @@ ADAPTER_DIR=${ADAPTER_DIR:?Must set ADAPTER_DIR (path to best_model/ checkpoint)
 
 MODEL_ID=${MODEL_ID:-"google/txgemma-9b-chat"}
 
-BRENDA_FILE=${BRENDA_FILE:-"/data/jarcagniriv/BRENDA/brenda_2026_1.txt"}
+BRENDA_FILE=${BRENDA_FILE:?Must set BRENDA_FILE (path to BRENDA flat file, e.g. brenda_2026_1.txt)}
 BRENDA_INDEX=${BRENDA_INDEX:-"$PROJECT_ROOT/chat/data/brenda_index.json"}
 
 INPUT_CSV=${INPUT_CSV:-"$PROJECT_ROOT/data/ECReact/test.csv"}

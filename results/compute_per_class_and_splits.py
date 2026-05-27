@@ -41,24 +41,25 @@ MODELS = {
     "Theia":            RESULTS / "Theia/theia_test_predictions.tsv",
 }
 
-TRUE_CSV = RESULTS.parent / "src" / "bec-pred" / "DB" / "test.csv"
+TRUE_CSV = RESULTS.parent / "Benchmarking" / "bec-pred" / "DB" / "test.csv"
 
 SPLIT_FILES = {
-    "Scaffold":   RESULTS / "Rhea_Scaffold/results/predictions_test.EC_NUMBER.EC_NUMBER_PROMPT_2.igfu9f9z.tsv",
-    "Stratified": RESULTS / "Rhea_Stratified/results/predictions_test.EC_NUMBER.EC_NUMBER_PROMPT_2.w4rdbwkp.tsv",
-    "Time":       RESULTS / "Rhea_Time/results/predictions_pred.EC_NUMBER.EC_NUMBER_PROMPT_2.20260416-214016.tsv",
+    "Scaffold":   RESULTS / "Rhea_Scaffold/results/predictions_test.EC_NUMBER.EC_NUMBER_PROMPT_2.2ccg88m4.tsv",
+    "Stratified": RESULTS / "Rhea_Stratified/results/predictions_test.EC_NUMBER.EC_NUMBER_PROMPT_2.bh3giqf5.tsv",
+    "Time":       RESULTS / "Rhea_Time/results/predictions_test.EC_NUMBER.EC_NUMBER_PROMPT_2.p4yvjfv3.tsv",
 }
 
-# BEC-Pred and Theia values kept as-is (no raw prediction files available)
+SPLIT_FILES_2B = {
+    "Scaffold":   RESULTS / "Rhea_Scaffold_2b/results/predictions_test.EC_NUMBER.EC_NUMBER_PROMPT_2.ba8uhguz.tsv",
+    "Stratified": RESULTS / "Rhea_Stratified_2b/results/predictions_test.EC_NUMBER.EC_NUMBER_PROMPT_2.bpo8eut4.tsv",
+    "Time":       RESULTS / "Rhea_Time_2b/results/predictions_test.EC_NUMBER.EC_NUMBER_PROMPT_2.0v4eygul.tsv",
+}
+
+# BEC-Pred values kept as-is (no raw partition prediction files available)
 BECPRED = {
     "Scaffold":   {"MCC": 0.6182, "PPV": 0.6110, "Recall": 0.6486},
     "Stratified": {"MCC": 0.8466, "PPV": 0.8431, "Recall": 0.8604},
     "Time":       {"MCC": 0.6996, "PPV": 0.7236, "Recall": 0.7083},
-}
-THEIA = {
-    "Scaffold":   {"MCC": 0.7776, "PPV": 0.7842, "Recall": 0.7933},
-    "Stratified": {"MCC": 0.9466, "PPV": 0.9500, "Recall": 0.9475},
-    "Time":       {"MCC": 0.7465, "PPV": 0.7555, "Recall": 0.7607},
 }
 
 
@@ -174,7 +175,7 @@ print(f"\nSaved → {out2}\n")
 
 
 # ---------------------------------------------------------------------------
-# FILE 3 — splits weighted MCC (Gemma4EC-9b recomputed, BEC-Pred/Theia kept)
+# FILE 3 — splits weighted MCC (Gemma4EC-9b/2b recomputed, BEC-Pred kept)
 # ---------------------------------------------------------------------------
 
 print("=" * 60)
@@ -182,28 +183,39 @@ print("FILE 3 — splits weighted MCC (subsubclass)")
 print("=" * 60)
 
 split_rows = []
-for split, path in SPLIT_FILES.items():
-    ts, ps = load_sets(path)
+for split in ("Scaffold", "Stratified", "Time"):
+    path_9b = SPLIT_FILES[split]
+    path_2b = SPLIT_FILES_2B[split]
 
-    # Build label space for this split
-    split_labels = sorted({lbl for s in ts + ps for lbl in s})
-    split_mlb = MultiLabelBinarizer(classes=split_labels)
-    split_mlb.fit([split_labels])
+    ts_9b, ps_9b = load_sets(path_9b)
+    split_labels_9b = sorted({lbl for s in ts_9b + ps_9b for lbl in s})
+    split_mlb_9b = MultiLabelBinarizer(classes=split_labels_9b)
+    split_mlb_9b.fit([split_labels_9b])
+    w_mcc_9b, w_prec_9b, w_rec_9b, _ = evaluate(ts_9b, ps_9b, split_mlb_9b, split_labels_9b)
+    print(f"  Gemma4EC-9b {split:<12}  MCC={w_mcc_9b:.3f}  PPV={w_prec_9b:.3f}  Recall={w_rec_9b:.3f}")
 
-    w_mcc, w_prec, w_rec, _ = evaluate(ts, ps, split_mlb, split_labels)
-    print(f"  Gemma4EC-9b {split:<12}  MCC={w_mcc:.3f}  PPV={w_prec:.3f}  Recall={w_rec:.3f}")
+    if path_2b.exists():
+        ts_2b, ps_2b = load_sets(path_2b)
+        split_labels_2b = sorted({lbl for s in ts_2b + ps_2b for lbl in s})
+        split_mlb_2b = MultiLabelBinarizer(classes=split_labels_2b)
+        split_mlb_2b.fit([split_labels_2b])
+        w_mcc_2b, w_prec_2b, w_rec_2b, _ = evaluate(ts_2b, ps_2b, split_mlb_2b, split_labels_2b)
+        print(f"  Gemma4EC-2b {split:<12}  MCC={w_mcc_2b:.3f}  PPV={w_prec_2b:.3f}  Recall={w_rec_2b:.3f}")
+    else:
+        w_mcc_2b = w_prec_2b = w_rec_2b = float("nan")
+        print(f"  Gemma4EC-2b {split:<12}  [no predictions file]")
 
     split_rows.append({
-        "Split": split,
-        "Gemma4EC-9b_MCC":    w_mcc,
-        "Gemma4EC-9b_PPV":    w_prec,
-        "Gemma4EC-9b_Recall": w_rec,
+        "Split":               split,
+        "Gemma4EC-9b_MCC":    w_mcc_9b,
+        "Gemma4EC-9b_PPV":    w_prec_9b,
+        "Gemma4EC-9b_Recall": w_rec_9b,
+        "Gemma4EC-2b_MCC":    w_mcc_2b,
+        "Gemma4EC-2b_PPV":    w_prec_2b,
+        "Gemma4EC-2b_Recall": w_rec_2b,
         "BEC-Pred_MCC":       BECPRED[split]["MCC"],
         "BEC-Pred_PPV":       BECPRED[split]["PPV"],
         "BEC-Pred_Recall":    BECPRED[split]["Recall"],
-        "Theia_MCC":          THEIA[split]["MCC"],
-        "Theia_PPV":          THEIA[split]["PPV"],
-        "Theia_Recall":       THEIA[split]["Recall"],
     })
 
 file3_df = pd.DataFrame(split_rows)

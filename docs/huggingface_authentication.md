@@ -1,101 +1,123 @@
-# Hugging Face authentication for Gemma4EC
+# Hugging Face authentication
+
 This document explains how to authenticate with the Hugging Face Hub in order to **automatically download and cache the TxGemma base models** used by Gemma4EC.
 
-Authentication is required in most environments, and **mandatory on HPC / SLURM systems**, where anonymous downloads are typically blocked.
+Authentication is required in most environments and **mandatory on HPC / SLURM systems**, where anonymous downloads are typically blocked.
 
 ---
 
 ## Why authentication is required
-Gemma4EC relies on **TxGemma-Predict** base models hosted on the Hugging Face Hub (e.g. `google/txgemma-9b-predict`).
 
-Although these models are downloaded automatically by the 🤗 `transformers` library, **access to the repository requires authentication**.
+Gemma4EC relies on **TxGemma-Predict** (and optionally **TxGemma-Chat**) base models hosted on the Hugging Face Hub.
 
-Without a valid Hugging Face token:
+Although these models are downloaded automatically by the 🤗 `transformers` library, **access requires authentication**. Without a valid token:
 
-* the base model download will fail,
-* prediction and training jobs will not start,
-* caching across jobs and nodes will not work.
+- the base model download will fail,
+- prediction and training jobs will not start,
+- model caching across jobs and nodes will not work.
 
-Once the model is cached locally, authentication is no longer required for subsequent runs.
+Once the model is cached locally, the token is no longer needed for subsequent runs.
 
 ---
 
-## Create a Hugging Face access token
-1. Go to: [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens)
-2. Create a **read-only** access token
-3. Copy the token (it starts with `hf_...`)
+## Models that require access
 
-> A read-only token is sufficient for all Gemma4EC use cases.
+Request access on each model's Hub page before running Gemma4EC:
+
+| Model | Hub page | Used for |
+|---|---|---|
+| `google/txgemma-9b-predict` | [link](https://huggingface.co/google/txgemma-9b-predict) | Fine-tuning + inference (9B) |
+| `google/txgemma-2b-predict` | [link](https://huggingface.co/google/txgemma-2b-predict) | Fine-tuning + inference (2B) |
+| `google/txgemma-9b-chat` | [link](https://huggingface.co/google/txgemma-9b-chat) | Mechanistic explanation notebook |
+
+Access is typically approved within minutes.
+
+---
+
+## Creating a Hugging Face access token
+
+1. Go to [https://huggingface.co/settings/tokens](https://huggingface.co/settings/tokens).
+2. Create a **read-only** access token (sufficient for all Gemma4EC use cases).
+3. Copy the token — it starts with `hf_...`.
 
 ---
 
 ## Making the token available
-### Recommended: secrets script (safe and reusable)
-Create a private file **not tracked by git**, for example:
+
+### Option 1 — Interactive login (local use)
 
 ```bash
-~/.secrets_hf.sh
+huggingface-cli login
 ```
 
-with the following content:
+This stores the token in `~/.huggingface/token` and is automatically picked up by `transformers`.
+
+### Option 2 — Environment variable (recommended for scripts and HPC)
+
+Create a private file **not tracked by git**, for example `~/.secrets_hf.sh`:
 
 ```bash
 export HUGGINGFACE_TOKEN=hf_xxxxxxxxxxxxxxxxxxxxxxxxx
 ```
 
-Then source it in your shell:
+Then source it in your shell before running:
 
 ```bash
 source ~/.secrets_hf.sh
 ```
 
-You may also add this line to your `.bashrc` or `.bash_profile` if appropriate.
+You may also add this to your `.bashrc` or `.bash_profile` if appropriate.
+
+### Option 3 — Inline export (one-off)
+
+```bash
+export HUGGINGFACE_TOKEN=hf_...
+python predict.py ...
+```
 
 ---
 
-### Using the token in SLURM jobs (HPC)
-When running Gemma4EC on an HPC cluster, the token must be visible **inside the batch job**.
+## Using the token in SLURM jobs (HPC)
 
-The recommended approach is to source the secrets file directly in the SLURM script:
+The token must be visible **inside the batch job**. Source the secrets file directly in the SLURM script:
 
 ```bash
 source ~/.secrets_hf.sh
 ```
 
-The Gemma4EC SLURM scripts pass the token explicitly to the prediction code:
+The Gemma4EC SLURM scripts pass the token to the Python code via:
 
 ```bash
 --hf_token $HUGGINGFACE_TOKEN
 ```
 
-Internally, this enables:
-
-* automatic download of the TxGemma base model,
-* proper caching in `$HF_HOME` / `$TRANSFORMERS_CACHE`,
-* reuse of the cached model across multiple runs and jobs.
+This enables:
+- automatic download of the TxGemma base model,
+- proper caching in `$HF_HOME` / `$TRANSFORMERS_CACHE`,
+- reuse of the cached model across multiple runs and jobs.
 
 ---
 
-## Notes on caching behavior
-* The Hugging Face token is **only required for the initial download** of the base model.
-* Once cached, the model will not be downloaded again.
-* Cached models can be reused across:
+## Notes on caching
 
-  * multiple prediction runs,
-  * different SLURM jobs,
-  * training and inference workflows.
+- The token is **only required for the initial download**.
+- Once cached, the model will not be re-downloaded.
+- Cached models are reused across prediction runs, training jobs, and SLURM arrays.
+- To control the cache location, set `HF_HOME` or `TRANSFORMERS_CACHE` before running.
 
 ---
 
 ## Security best practices
-* **Never commit tokens** to the repository.
-* Always use environment variables or private scripts.
-* Prefer read-only tokens.
-* Do not hard-code tokens in SLURM scripts or Python files.
+
+- **Never commit tokens** to the repository.
+- Always use environment variables or private scripts.
+- Prefer read-only tokens.
+- Do not hard-code tokens in SLURM scripts or Python files.
 
 ---
 
 ## Related documentation
-* For local and HPC prediction workflows, see: `docs/prediction_hpc.md`
-* For training pipelines, see: `docs/training.md`
-* For model architecture and design choices, see: `docs/model_details.md`
+
+- Local and HPC prediction: [`docs/prediction_hpc.md`](prediction_hpc.md)
+- Training and fine-tuning: [`docs/training.md`](training.md)
+- SLURM scripts: [`slurm/README.md`](../slurm/README.md)

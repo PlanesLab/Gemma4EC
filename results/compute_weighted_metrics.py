@@ -22,7 +22,7 @@ from sklearn.preprocessing import MultiLabelBinarizer
 warnings.filterwarnings("ignore")
 
 RESULTS = Path(__file__).parent
-TRUE_CSV = RESULTS.parent / "src" / "bec-pred" / "DB" / "test.csv"
+TRUE_CSV = RESULTS.parent / "Benchmarking" / "bec-pred" / "DB" / "test.csv"
 
 MODELS = {
     "ChatGPT-4.1-mini": (

@@ -2,7 +2,9 @@ library(tidyverse)
 library(ggplot2)
 library(cowplot)
 
-df <- read.csv("/scratch/jarcagniriv/Gemma4EC/results/summary/weighted_metrics.csv")
+here <- dirname(rstudioapi::getSourceEditorContext()$path)
+if (!nzchar(here)) here <- getwd()
+df <- read.csv(file.path(here, "..", "results", "summary", "weighted_metrics.csv"))
 
 # ---- Reshape to long format ----\]
 
@@ -145,10 +147,10 @@ save_figure <- function(plot_data, out_path, width = 22) {
 
 save_figure(
   plot_df_no_tx,
-  "/scratch/jarcagniriv/Gemma4EC/figures/plot_no_txgemma.png"
+  file.path(here, "plot_no_txgemma.png")
 )
 
 save_figure(
   plot_df_no_tx_bec,
-  "/scratch/jarcagniriv/Gemma4EC/figures/plot_no_txgemma_no_becpred.png"
+  file.path(here, "plot_no_txgemma_no_becpred.png")
 )

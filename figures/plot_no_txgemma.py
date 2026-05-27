@@ -1,10 +1,15 @@
 """
 Reproduces Figure1B.R: plotnine bar chart + cowplot-style 3-section legend.
 Renders at full 600 DPI then composites with PIL for a crisp final image.
+
+Usage (from the repository root):
+    python figures/plot_no_txgemma.py
 """
+import os
+from pathlib import Path
 import pandas as pd
 import numpy as np
-import tempfile, os
+import tempfile
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -17,8 +22,10 @@ from plotnine import (
     position_dodge,
 )
 
+_HERE = Path(__file__).parent
+
 # ── Data ──────────────────────────────────────────────────────────────────────
-df = pd.read_csv("/scratch/jarcagniriv/Gemma4EC/results/summary/weighted_metrics.csv")
+df = pd.read_csv(_HERE.parent / "results/summary/weighted_metrics.csv")
 rename = {
     "Gemma4EC-9b":      "Gemma4EC-9B",
     "Gemma4EC-2b":      "Gemma4EC-2B",
@@ -186,6 +193,6 @@ df_no_tx     = df[df["Model"] != "TxGemma-9b"].copy()
 df_no_tx_bec = df[~df["Model"].isin(["TxGemma-9b", "BEC-Pred"])].copy()
 
 save_figure(df_no_tx,
-            "/scratch/jarcagniriv/Gemma4EC/figures/plot_no_txgemma.png")
+            str(_HERE / "plot_no_txgemma.png"))
 save_figure(df_no_tx_bec,
-            "/scratch/jarcagniriv/Gemma4EC/figures/plot_no_txgemma_no_becpred.png")
+            str(_HERE / "plot_no_txgemma_no_becpred.png"))

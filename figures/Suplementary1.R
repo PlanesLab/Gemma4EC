@@ -1,8 +1,10 @@
 # ============================================================
 # Load data
 # ============================================================
+here <- dirname(rstudioapi::getSourceEditorContext()$path)
+if (!nzchar(here)) here <- getwd()
 data_classes <- read.csv(
-  "/scratch/jarcagniriv/Gemma4EC/results/summary/per_class_mcc.csv",
+  file.path(here, "..", "results", "summary", "per_class_mcc.csv"),
   stringsAsFactors = FALSE
 )
 
@@ -140,7 +142,7 @@ panel_b_new <- cowplot::plot_grid(
 # Save figure
 # ============================================================
 ggsave(
-  "/scratch/jarcagniriv/Gemma4EC/figures/panelB_classes_selected.png",
+  file.path(here, "panelB_classes_selected.png"),
   panel_b_new,
   width  = 14,
   height = 16,

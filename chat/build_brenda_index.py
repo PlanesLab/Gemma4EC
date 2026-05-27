@@ -8,8 +8,8 @@ builds a text summary per group that can be injected into a chat prompt.
 
 Usage:
     python chat/build_brenda_index.py \
-        --brenda_file /data/jarcagniriv/BRENDA/brenda_2026_1.txt \
-        --output_file /scratch/jarcagniriv/Gemma4EC/chat/data/brenda_index.json
+        --brenda_file brenda_2026_1.txt \
+        --output_file chat/data/brenda_index.json
 """
 
 import re
@@ -171,9 +171,9 @@ def build_index(
 def main():
     parser = argparse.ArgumentParser(description="Build BRENDA RAG index")
     parser.add_argument("--brenda_file",
-                        default="/data/jarcagniriv/BRENDA/brenda_2026_1.txt")
+                        default="brenda_2026_1.txt")
     parser.add_argument("--output_file",
-                        default="/scratch/jarcagniriv/Gemma4EC/chat/data/brenda_index.json")
+                        default="chat/data/brenda_index.json")
     parser.add_argument("--max_enzymes_per_class",  type=int, default=25)
     parser.add_argument("--max_reactions_per_enzyme", type=int, default=5)
     parser.add_argument("--max_chars_per_class",    type=int, default=4000)

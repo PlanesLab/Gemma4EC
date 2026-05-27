@@ -22,7 +22,7 @@ from pathlib import Path
 from collections import defaultdict
 
 ATTN_DIR   = Path("attn_out")
-BRENDA     = Path("/data/jarcagniriv/BRENDA/brenda_2026_1.txt")
+BRENDA = Path(os.environ.get("BRENDA_FILE", "brenda_2026_1.txt"))
 OUT_FILE   = Path("chat/prompts/mechanistic_prompts.json")
 
 _HEADER_RE = re.compile(r'^[A-Z][A-Z_]{3,}$')

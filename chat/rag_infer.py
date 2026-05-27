@@ -15,11 +15,11 @@ The BRENDA index (JSON) is built by chat/build_brenda_index.py.
 
 Usage:
     python chat/rag_infer.py \
-        --predict_adapter_dir /scratch/jarcagniriv/Gemma4EC/results/Rhea_Stratified/results/best \
-        --chat_adapter_dir    /scratch/jarcagniriv/gemma4ec/chat/checkpoints/best_model \
+        --predict_adapter_dir results/Rhea_Stratified/results/best \
+        --chat_adapter_dir    ./chat/checkpoints/best_model \
         --brenda_index        chat/data/brenda_index.json \
         --input_csv           data/ECReact/test.csv \
-        --output_file         /scratch/jarcagniriv/gemma4ec/chat/results/rag_predictions.tsv
+        --output_file         ./outputs/rag_predictions.tsv
 """
 
 import gc
@@ -307,10 +307,10 @@ def parse_args():
     p.add_argument("--chat_base_model_id", default="google/txgemma-9b-chat")
     # data
     p.add_argument("--brenda_index",
-                   default="/scratch/jarcagniriv/Gemma4EC/chat/data/brenda_index.json")
+                   default="chat/data/brenda_index.json")
     p.add_argument("--input_csv", default="data/ECReact/test.csv")
     p.add_argument("--output_file",
-                   default="/scratch/jarcagniriv/gemma4ec/chat/results/rag_predictions.tsv")
+                   default="./outputs/rag_predictions.tsv")
     # inference
     p.add_argument("--batch_size",     type=int, default=8)
     p.add_argument("--max_new_tokens", type=int, default=256)

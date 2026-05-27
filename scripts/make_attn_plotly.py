@@ -8,7 +8,7 @@ extracts the embedded attention data, and writes rxnNN_attn.html — one file
 per reaction with a head selector dropdown.  No GPU, no model needed.
 
 Usage:
-    cd /scratch/jarcagniriv/Gemma4EC
+    cd Gemma4EC
     pip install plotly         # one-time
     python make_attn_plotly.py
 """

@@ -10,7 +10,7 @@ Prediction outputs and evaluation metrics for all models benchmarked in Gemma4EC
 |---|---|
 | `summary/weighted_metrics.csv` | **Main benchmark table.** Overall support-weighted MCC, PPV, and Recall for every model at the sub-subclass level. |
 | `summary/per_class_mcc.csv` | Per-EC-class weighted MCC for all models (EC classes 1–7 plus overall). |
-| `summary/splits_weighted_mcc.csv` | Gemma4EC-9b vs [Theia](https://github.com/daenuprobst/theia) vs [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) across the three [Rhea](https://www.rhea-db.org/) partition splits (Scaffold, Stratified, Time). |
+| `summary/splits_weighted_mcc.csv` | Gemma4EC-9b, Gemma4EC-2b, and [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) across the three [Rhea](https://www.rhea-db.org/) partition splits (Scaffold, Stratified, Time). |
 
 ---
 
@@ -34,7 +34,7 @@ No extra arguments needed — all paths are resolved relative to this folder.
 
 Produces two tables using the same weighted-MCC methodology:
 - `summary/per_class_mcc.csv` — weighted MCC broken down by EC class (1–7) for all models
-- `summary/splits_weighted_mcc.csv` — weighted MCC for Gemma4EC-9b on each [Rhea](https://www.rhea-db.org/) split, alongside pre-computed [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) and [Theia](https://github.com/daenuprobst/theia) values
+- `summary/splits_weighted_mcc.csv` — weighted MCC for Gemma4EC-9b and Gemma4EC-2b on each [Rhea](https://www.rhea-db.org/) split, alongside pre-computed [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) values
 
 ```bash
 cd results/
@@ -57,7 +57,7 @@ results/
 ├── summary/
 │   ├── weighted_metrics.csv          # All models — overall weighted MCC/PPV/Recall
 │   ├── per_class_mcc.csv             # All models — MCC per EC class (1–7)
-│   └── splits_weighted_mcc.csv       # Rhea splits — Gemma4EC / BEC-Pred / Theia
+│   └── splits_weighted_mcc.csv       # Rhea splits — Gemma4EC-9b / Gemma4EC-2b / BEC-Pred
 │
 ├── bec-pred/
 │   └── results_test_ec.csv           # BEC-Pred predictions on the standard test set
@@ -77,8 +77,7 @@ results/
         └── zeroshot_test_*.tsv       # Zero-shot prediction TSV (gitignored)
 ```
 
-> **Note:** Large TSV prediction files and adapter weights are gitignored.
-> Raw model predictions used in the paper are available in the HuggingFace repository.
+> **Note:** Large TSV prediction files and adapter weights are gitignored. Raw model predictions used in the paper are available in the HuggingFace repository.
 
 ---
 
@@ -95,3 +94,12 @@ All TSV files produced by `predict.py` / `predict_zeroshot.py` share this schema
 | `smiles` | Reaction SMILES used as input |
 
 BEC-Pred predictions (`bec-pred/results_test_ec.csv`) use a two-column format: `Reaction` (SMILES) and `Prediction` (EC).
+
+---
+
+## Attention outputs
+
+For reaction-level attention visualisations (not stored here), see:
+
+- [`infer_attention.py`](../infer_attention.py) — batch script that writes BertViz HTML and attention heatmap PNGs to `attn_out/`
+- [`notebooks/mechanistic_explanation.ipynb`](../notebooks/mechanistic_explanation.ipynb) — interactive notebook combining attention maps with a 4-turn TxGemma-Chat mechanistic dialogue

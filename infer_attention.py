@@ -9,11 +9,11 @@ the fine-tuned Gemma4EC adapter, and saves per-reaction:
   - summary.tsv             (smiles / true_ec / predicted_ec / correct flags)
 
 Setup (one-time — install bertviz into the gemma4ec env):
-    conda activate /scratch/jarcagniriv/conda_envs/gemma4ec
+    conda activate gemma4ec
     pip install bertviz
 
 Usage (defaults are ready to run from the Gemma4EC/ directory):
-    conda activate /scratch/jarcagniriv/conda_envs/gemma4ec
+    conda activate gemma4ec
     python infer_attention.py
 
 GPU with < 20 GB VRAM — add --load_in_4bit (uses bitsandbytes NF4):
@@ -45,10 +45,7 @@ import torch
 
 _HERE = Path(__file__).parent
 
-BASE_MODEL = str(
-    _HERE / "hfcache/models--google--txgemma-9b-predict"
-    "/snapshots/d8e65c274206c96631276df0ac009a5c6c24b293"
-)
+BASE_MODEL = "google/txgemma-9b-predict"
 ADAPTER    = str(_HERE / "results/ECReact/results/best")
 TEST_CSV   = str(_HERE / "data/ECReact/test.csv")
 PROMPTS    = str(_HERE / "prompts/prompts.json")

@@ -3,7 +3,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 model_id = "google/txgemma-9b-chat"
-cache_dir = "/scratch/jarcagniriv/Gemma4EC/hfcache"
+cache_dir = os.environ.get("HF_HOME", None)
 
 print("Loading tokenizer...")
 tok = AutoTokenizer.from_pretrained(model_id, cache_dir=cache_dir)

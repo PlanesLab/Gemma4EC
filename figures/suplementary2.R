@@ -10,7 +10,12 @@ library(cowplot)
 # ============================================================
 # Load data (NEW)
 # ============================================================
-data <- read_csv("/scratch/jarcagniriv/Gemma4EC/results/summary/splits_weighted_mcc.csv")
+here <- tryCatch(
+  dirname(rstudioapi::getSourceEditorContext()$path),
+  error = function(e) ""
+)
+if (!nzchar(here)) here <- getwd()
+data <- read_csv(file.path(here, "..", "results", "summary", "splits_weighted_mcc.csv"))
 
 # ============================================================
 # Reshape data (WIDE → LONG)  🔥 KEY STEP
@@ -26,7 +31,7 @@ data_long <- data %>%
 # ============================================================
 # Method order (adjust if needed)
 # ============================================================
-method_order <- c("Theia", "BEC-Pred", "Gemma4EC-9b")
+method_order <- c("BEC-Pred", "Gemma4EC-9b", "Gemma4EC-2b")
 
 # ============================================================
 # Colors (same as your original)
@@ -132,7 +137,7 @@ final_plot <- plot_grid(
 # Save
 # ============================================================
 ggsave(
-  "/scratch/jarcagniriv/Gemma4EC/figures/splits.png",
+  file.path(here, "splits.png"),
   final_plot,
   width = 16,
   height = 18,

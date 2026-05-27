@@ -8,7 +8,7 @@ reaction, slices the embedded attention matrix accordingly, and overwrites
 each rxnNN_bertviz.html in place.
 
 Usage:
-    cd /scratch/jarcagniriv/Gemma4EC
+    cd Gemma4EC
     python slim_bertviz.py
     python slim_bertviz.py --attn_dir attn_out --summary attn_out/summary.tsv
 """

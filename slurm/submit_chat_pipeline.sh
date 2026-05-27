@@ -4,7 +4,7 @@
 #   Job 2 — build BRENDA index + RAG inference (1 GPU, runs after job 1)
 #
 # Usage:
-#   cd /scratch/jarcagniriv/Gemma4EC
+#   cd Gemma4EC
 #   bash slurm/submit_chat_pipeline.sh
 
 set -euo pipefail

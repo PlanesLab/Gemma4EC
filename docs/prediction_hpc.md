@@ -1,85 +1,72 @@
-
 # Large-scale prediction on HPC (SLURM)
+
 This document describes how to run **large-scale EC number prediction with Gemma4EC** on HPC systems using **SLURM** and **multi-GPU distributed inference**.
 
-For simple, local inference on a single GPU, see the Quick Start section in the main README.
+For simple, local inference on a single GPU, see the [Predict EC numbers](../README.md#predict-ec-numbers) section in the main README.
 
 ---
 
 ## Overview
+
 For large reaction datasets (thousands to millions of reactions), Gemma4EC provides SLURM scripts that:
 
-* run **distributed inference** via 🤗 Accelerate,
-* automatically detect available GPUs per node,
-* load a pretrained TxGemma base model + Gemma4EC LoRA adapter,
-* write predictions and logs in a reproducible layout.
+- run **distributed inference** via 🤗 Accelerate,
+- automatically detect available GPUs per node,
+- load a pretrained TxGemma base model + Gemma4EC LoRA adapter,
+- write predictions and logs in a reproducible layout.
 
 This is the **recommended approach** for production-scale annotation.
 
 ---
 
 ## Prerequisites
+
 Before running predictions on HPC, ensure that:
 
-* A CUDA-capable GPU node is available
-* The Conda environment is installed and activated
-* The Gemma4EC LoRA adapter is downloaded locally
-* Hugging Face authentication is configured
-
-For Hugging Face authentication details, see:
-* `docs/huggingface_authentication.md`
+- A CUDA-capable GPU node is available
+- The Conda environment is installed and activated (`conda activate gemma4ec`)
+- The Gemma4EC LoRA adapter is downloaded locally (see [Step 1](#step-1--download-the-adapter))
+- Hugging Face authentication is configured (see [`docs/huggingface_authentication.md`](huggingface_authentication.md))
 
 ---
 
-## Input data
-Prediction requires a CSV file containing at least one column:
+## Step 1 — Download the adapter
 
-* `rxn_smiles` — biochemical reaction SMILES
-
-Example:
-
-```text
-rxn_smiles
-CCO.CC(=O)O>>CCOC(=O)C
-```
-
----
-
-## Adapter and base model
-Gemma4EC prediction uses:
-
-* a **TxGemma-Predict base model** (downloaded automatically), and
-* a **task-specific Gemma4EC LoRA adapter** (provided locally).
-
-The adapter must be downloaded manually from Hugging Face, for example:
-
-```
-https://huggingface.co/PlanesLab/Gemma4EC-9B-Predict
+```bash
+git clone https://huggingface.co/PlanesLab/Gemma4EC-9B-Predict models/Gemma4EC-9B-Predict
+# or for the 2B variant:
+git clone https://huggingface.co/PlanesLab/Gemma4EC-2B-Predict models/Gemma4EC-2B-Predict
 ```
 
 The adapter directory must contain:
-* `adapter_model.safetensors`
-* `adapter_config.json`
+- `adapter_model.safetensors`
+- `adapter_config.json`
 
 ---
 
-## Running a SLURM prediction job
-A reference SLURM script is provided:
+## Step 2 — Prepare your input CSV
 
-```bash
-slurm/run_predict_gemma4ec.sh
-```
+The input file must contain at least one column:
 
-Submit the job with:
+| Column | Description |
+|---|---|
+| `rxn_smiles` | Biochemical reaction SMILES |
 
-```bash
-sbatch slurm/run_predict_gemma4ec.sh
+Example:
+
+```csv
+rxn_smiles
+CCO.CC(=O)O>>CCOC(=O)C
+OC(=O)CCC(=O)C(=O)O>>OC(=O)CCC(N)C(=O)O
 ```
 
 ---
 
-## Configuring the SLURM script
-Before submission, edit `slurm/run_predict_gemma4ec.sh` and set the following variables:
+## Step 3 — Submit the SLURM job
+
+A reference SLURM script is provided at [`slurm/run_predict_gemma4ec.sh`](../slurm/run_predict_gemma4ec.sh).
+
+Before submission, edit the script and set the following variables:
 
 ```bash
 raw_data_file="/path/to/reactions.csv"
@@ -89,62 +76,80 @@ output_folder="/scratch/<user>/gemma4ec/data/predict_run/results"
 # Path to the downloaded Gemma4EC adapter
 model_checkpoint_folder="/path/to/Gemma4EC-9B-Predict"
 
-# Base model (downloaded automatically)
+# Base model (downloaded automatically on first run)
 model_id="google/txgemma-9b-predict"
+```
+
+Then submit:
+
+```bash
+sbatch slurm/run_predict_gemma4ec.sh
 ```
 
 ---
 
-## Execution details
+## What the script does
+
 Internally, the SLURM script launches distributed inference using:
 
 ```bash
 accelerate launch predict.py \
-  --raw_data_file $raw_data_file \
-  --processed_data_folder $processed_data_folder \
-  --output_folder $output_folder \
-  --model_checkpoint_folder $model_checkpoint_folder \
-  --model_id $model_id \
-  --template_key EC_NUMBER_PROMPT_2
+  --raw_data_file            $raw_data_file \
+  --processed_data_folder    $processed_data_folder \
+  --output_folder            $output_folder \
+  --model_checkpoint_folder  $model_checkpoint_folder \
+  --model_id                 $model_id \
+  --template_key             EC_NUMBER_PROMPT_2
 ```
 
-Key points:
-* GPU count is detected automatically by Accelerate
-* The TxGemma base model is cached after the first download
-* The LoRA adapter defines the EC-number specialization
+Key details:
+- GPU count is detected automatically by Accelerate
+- The TxGemma base model is cached after the first download
+- The LoRA adapter defines the EC-number specialisation
 
 ---
 
 ## Prompt selection
-Gemma4EC models are trained using a **specific prompt template**.
 
-* **`EC_NUMBER_PROMPT_2`** is the default and **recommended template for prediction**
-* This template matches the prompt used during model training
+Gemma4EC models are trained with a specific prompt template:
 
-Using a different prompt template for inference is **not recommended** unless a new model is retrained with that template.
+- **`EC_NUMBER_PROMPT_2`** is the default and **recommended template** — it matches the prompt used during training.
 
-Alternative prompt templates used during development are provided in:
-
-```text
-prompts/prompts.json
-```
-
-These templates are intended for **research and retraining purposes only**.
+Using a different template for inference is **not recommended** unless the model was retrained with that template. Alternative templates (used during development) are available in `prompts/prompts.json`.
 
 ---
 
 ## Output files
-A prediction run produces:
 
-* a TSV file containing predicted EC numbers,
-* optional logs and runtime statistics,
-* intermediate JSONL files used for batching.
+A prediction run writes to `output_folder`:
 
-Output files are written to the directory specified by `output_folder`.
+| File | Description |
+|---|---|
+| `predictions_*.tsv` | Predicted EC numbers with ground truth (if available) |
+| `*.jsonl` | Intermediate batching files |
+| Logs | Runtime statistics and error counts |
+
+See [`results/README.md`](../results/README.md) for the full TSV schema.
+
+---
+
+## Partition-level evaluation
+
+To re-evaluate a saved adapter on all Rhea partitions (no retraining):
+
+```bash
+# Single partition
+DB_NAME=Rhea_Time sbatch slurm/run_predict_partition.sh
+
+# All partitions
+bash slurm/submit_all_partitions.sh
+```
 
 ---
 
 ## Notes
-* Multi-GPU inference significantly improves throughput for large datasets
-* Ensure sufficient disk space for model caching
-* For most users, the pretrained adapter is sufficient and retraining is unnecessary
+
+- Multi-GPU inference significantly improves throughput for large datasets.
+- Ensure sufficient disk space for model caching (`$HF_HOME`).
+- For most users, **the pretrained adapters on Hugging Face are sufficient** — retraining is unnecessary.
+- For attention-based mechanistic explanation on a subset of reactions, see [`infer_attention.py`](../infer_attention.py) and [`notebooks/mechanistic_explanation.ipynb`](../notebooks/mechanistic_explanation.ipynb).
