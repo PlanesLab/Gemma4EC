@@ -1,15 +1,14 @@
 """
-compute_per_class_and_splits.py — Recompute per-class and split-level benchmark tables.
+compute_per_class.py — Recompute per-class benchmark table.
 
-Produces two output files at the sub-subclass level (3-digit EC, e.g. 1.1.1):
-  - summary/per_class_mcc.csv       : per-EC-class weighted MCC for all models
-  - summary/splits_weighted_mcc.csv : weighted MCC across the three Rhea partitions
+Produces one output file at the sub-subclass level (3-digit EC, e.g. 1.1.1):
+  - summary/per_class_mcc.csv : per-EC-class weighted MCC for all models
 
 Same shared-label-space methodology as compute_weighted_metrics.py.
 
 Usage:
     cd results/
-    python compute_per_class_and_splits.py
+    python compute_per_class.py
 """
 
 import warnings
@@ -42,25 +41,6 @@ MODELS = {
 }
 
 TRUE_CSV = RESULTS.parent / "Benchmarking" / "bec-pred" / "DB" / "test.csv"
-
-SPLIT_FILES = {
-    "Scaffold":   RESULTS / "Rhea_Scaffold/results/predictions_test.EC_NUMBER.EC_NUMBER_PROMPT_2.2ccg88m4.tsv",
-    "Stratified": RESULTS / "Rhea_Stratified/results/predictions_test.EC_NUMBER.EC_NUMBER_PROMPT_2.bh3giqf5.tsv",
-    "Time":       RESULTS / "Rhea_Time/results/predictions_test.EC_NUMBER.EC_NUMBER_PROMPT_2.p4yvjfv3.tsv",
-}
-
-SPLIT_FILES_2B = {
-    "Scaffold":   RESULTS / "Rhea_Scaffold_2b/results/predictions_test.EC_NUMBER.EC_NUMBER_PROMPT_2.ba8uhguz.tsv",
-    "Stratified": RESULTS / "Rhea_Stratified_2b/results/predictions_test.EC_NUMBER.EC_NUMBER_PROMPT_2.bpo8eut4.tsv",
-    "Time":       RESULTS / "Rhea_Time_2b/results/predictions_test.EC_NUMBER.EC_NUMBER_PROMPT_2.0v4eygul.tsv",
-}
-
-# BEC-Pred values kept as-is (no raw partition prediction files available)
-BECPRED = {
-    "Scaffold":   {"MCC": 0.6182, "PPV": 0.6110, "Recall": 0.6486},
-    "Stratified": {"MCC": 0.8466, "PPV": 0.8431, "Recall": 0.8604},
-    "Time":       {"MCC": 0.6996, "PPV": 0.7236, "Recall": 0.7083},
-}
 
 
 # ---------------------------------------------------------------------------
@@ -177,48 +157,3 @@ print(f"\nSaved → {out2}\n")
 # ---------------------------------------------------------------------------
 # FILE 3 — splits weighted MCC (Gemma4EC-9b/2b recomputed, BEC-Pred kept)
 # ---------------------------------------------------------------------------
-
-print("=" * 60)
-print("FILE 3 — splits weighted MCC (subsubclass)")
-print("=" * 60)
-
-split_rows = []
-for split in ("Scaffold", "Stratified", "Time"):
-    path_9b = SPLIT_FILES[split]
-    path_2b = SPLIT_FILES_2B[split]
-
-    ts_9b, ps_9b = load_sets(path_9b)
-    split_labels_9b = sorted({lbl for s in ts_9b + ps_9b for lbl in s})
-    split_mlb_9b = MultiLabelBinarizer(classes=split_labels_9b)
-    split_mlb_9b.fit([split_labels_9b])
-    w_mcc_9b, w_prec_9b, w_rec_9b, _ = evaluate(ts_9b, ps_9b, split_mlb_9b, split_labels_9b)
-    print(f"  Gemma4EC-9b {split:<12}  MCC={w_mcc_9b:.3f}  PPV={w_prec_9b:.3f}  Recall={w_rec_9b:.3f}")
-
-    if path_2b.exists():
-        ts_2b, ps_2b = load_sets(path_2b)
-        split_labels_2b = sorted({lbl for s in ts_2b + ps_2b for lbl in s})
-        split_mlb_2b = MultiLabelBinarizer(classes=split_labels_2b)
-        split_mlb_2b.fit([split_labels_2b])
-        w_mcc_2b, w_prec_2b, w_rec_2b, _ = evaluate(ts_2b, ps_2b, split_mlb_2b, split_labels_2b)
-        print(f"  Gemma4EC-2b {split:<12}  MCC={w_mcc_2b:.3f}  PPV={w_prec_2b:.3f}  Recall={w_rec_2b:.3f}")
-    else:
-        w_mcc_2b = w_prec_2b = w_rec_2b = float("nan")
-        print(f"  Gemma4EC-2b {split:<12}  [no predictions file]")
-
-    split_rows.append({
-        "Split":               split,
-        "Gemma4EC-9b_MCC":    w_mcc_9b,
-        "Gemma4EC-9b_PPV":    w_prec_9b,
-        "Gemma4EC-9b_Recall": w_rec_9b,
-        "Gemma4EC-2b_MCC":    w_mcc_2b,
-        "Gemma4EC-2b_PPV":    w_prec_2b,
-        "Gemma4EC-2b_Recall": w_rec_2b,
-        "BEC-Pred_MCC":       BECPRED[split]["MCC"],
-        "BEC-Pred_PPV":       BECPRED[split]["PPV"],
-        "BEC-Pred_Recall":    BECPRED[split]["Recall"],
-    })
-
-file3_df = pd.DataFrame(split_rows)
-out3 = SUMMARY / "splits_weighted_mcc.csv"
-file3_df.to_csv(out3, index=False, float_format="%.3f")
-print(f"\nSaved → {out3}")

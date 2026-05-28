@@ -10,7 +10,6 @@ Prediction outputs and evaluation metrics for all models benchmarked in Gemma4EC
 |---|---|
 | `summary/weighted_metrics.csv` | **Main benchmark table.** Overall support-weighted MCC, PPV, and Recall for every model at the sub-subclass level. |
 | `summary/per_class_mcc.csv` | Per-EC-class weighted MCC for all models (EC classes 1–7 plus overall). |
-| `summary/splits_weighted_mcc.csv` | Gemma4EC-9b, Gemma4EC-2b, and [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) across the three [Rhea](https://www.rhea-db.org/) partition splits (Scaffold, Stratified, Time). |
 
 ---
 
@@ -30,20 +29,16 @@ python compute_weighted_metrics.py
 
 No extra arguments needed — all paths are resolved relative to this folder.
 
-### `compute_per_class_and_splits.py` — per-class and partition comparison
+### `compute_per_class.py` — per-class comparison
 
-Produces two tables using the same weighted-MCC methodology:
+Produces one table using the same weighted-MCC methodology:
 - `summary/per_class_mcc.csv` — weighted MCC broken down by EC class (1–7) for all models
-- `summary/splits_weighted_mcc.csv` — weighted MCC for Gemma4EC-9b and Gemma4EC-2b on each [Rhea](https://www.rhea-db.org/) split, alongside pre-computed [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) values
 
 ```bash
 cd results/
-python compute_per_class_and_splits.py
+python compute_per_class.py
 # writes summary/per_class_mcc.csv
-#         summary/splits_weighted_mcc.csv
 ```
-
-For a simpler per-split summary that scans any prediction directory, see [`scripts/summarize_results.py`](../scripts/summarize_results.py).
 
 ---
 
@@ -52,25 +47,14 @@ For a simpler per-split summary that scans any prediction directory, see [`scrip
 ```
 results/
 ├── compute_weighted_metrics.py       # Main benchmark — weighted MCC across all models
-├── compute_per_class_and_splits.py   # Per-class MCC + partition split comparison
+├── compute_per_class.py              # Per-class MCC comparison
 │
 ├── summary/
 │   ├── weighted_metrics.csv          # All models — overall weighted MCC/PPV/Recall
-│   ├── per_class_mcc.csv             # All models — MCC per EC class (1–7)
-│   └── splits_weighted_mcc.csv       # Rhea splits — Gemma4EC-9b / Gemma4EC-2b / BEC-Pred
+│   └── per_class_mcc.csv             # All models — MCC per EC class (1–7)
 │
 ├── bec-pred/
 │   └── results_test_ec.csv           # BEC-Pred predictions on the standard test set
-│
-├── Rhea_Scaffold/                    # Gemma4EC-9b fine-tuned on Rhea_Scaffold
-│   ├── processed/                    # Intermediate JSONL files (gitignored)
-│   └── results/
-│       ├── best/                     # Saved LoRA adapter (weights gitignored)
-│       └── predictions_*.tsv         # Prediction TSVs (gitignored)
-│
-├── Rhea_Stratified/                  # Same structure as Rhea_Scaffold
-│
-├── Rhea_Time/                        # Same structure as Rhea_Scaffold
 │
 └── zeroshot/
     └── results/
