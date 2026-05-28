@@ -1,6 +1,6 @@
 # BEC-Pred baseline
 
-This directory contains the [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) pipeline adapted to run on the Gemma4EC benchmark partitions (Rhea_Scaffold, Rhea_Stratified, Rhea_Time).
+This directory contains the [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) pipeline adapted to run on the Gemma4EC ECReact benchmark.
 
 BEC-Pred is an EC number prediction model based on reaction fingerprints ([rxnfp](https://github.com/rxn4chemistry/rxnfp)) and a BERT-style classifier. It is included here as a competitive baseline against Gemma4EC.
 
@@ -34,14 +34,10 @@ conda activate becpred_gpu
 Use the SLURM scripts in `slurm/` from the repository root:
 
 ```bash
-# All three partitions at once
-bash slurm/submit_all_partitions_becpred.sh
-
-# Single partition
-DB_NAME=Rhea_Scaffold sbatch slurm/run_becpred.sh
+sbatch benchmarking/bec-pred/slurm/run_becpred.sh
 ```
 
-Results are written to `$SCRATCH/gemma4ec/becpred_<DB_NAME>/Results/results_test_ec.csv`.
+Results are written to `$SCRATCH/gemma4ec/becpred/Results/results_test_ec.csv`.
 
 ---
 
@@ -51,10 +47,7 @@ From the project root:
 
 ```bash
 chmod +x benchmarking/bec-pred/run_becpred.sh
-
-DB_NAME=Rhea_Scaffold \
-PROJECT_ROOT=$(pwd) \
-bash benchmarking/bec-pred/run_becpred.sh
+PROJECT_ROOT=$(pwd) bash benchmarking/bec-pred/run_becpred.sh
 ```
 
 ---

@@ -45,41 +45,9 @@ data/ECReact/raw_data.csv
 
 ---
 
-## Stratified dataset splitting
+## Dataset
 
-Before training, the raw dataset is split into train / validation / test partitions using **hierarchical EC stratification**.
-
-Supported stratification levels:
-
-| Level | Granularity | Example |
-|---|---|---|
-| 1 | EC class | `2` |
-| 2 | Class.subclass | `2.7` |
-| 3 | Class.subclass.subsubclass | `2.7.8` |
-
-Run the split via:
-
-```bash
-python scripts/prepare_db.py \
-  --db Rhea_Stratified \
-  --db_root /path/to/raw/database \
-  --out_root data/partitions \
-  --val_frac 0.10 \
-  --strat_level 2 \
-  --seed 42
-```
-
-### Edge-case handling
-
-To ensure robust splits, the following rules are applied per EC group:
-
-| Group size | Assignment |
-|---|---|
-| n = 1 | Training only |
-| n = 2 | One to train, one to validation |
-| n ≥ 3 | At least one sample in each of train, validation, and test |
-
-For most use cases, **stratification at level 2** offers the best balance between granularity and stability.
+Training uses the ECReact dataset in `data/ECReact/` (train / val / test CSVs).
 
 ---
 
@@ -235,19 +203,11 @@ Logging is performed via **Weights & Biases (optional)**. Enable it by providing
 
 Gemma4EC provides example SLURM scripts for large-scale training on multi-GPU systems. See [`slurm/README.md`](../slurm/README.md) for the full list.
 
-**Fine-tune on all three Rhea partitions:**
-
 ```bash
 export HUGGINGFACE_TOKEN=hf_...
 export WANDB_API_KEY=...
-bash slurm/submit_all_partitions.sh       # 9B model
-bash slurm/submit_all_partitions_2b.sh    # 2B model
-```
-
-**Single partition:**
-
-```bash
-DB_NAME=Rhea_Time sbatch slurm/run_train_partition.sh
+sbatch slurm/run_train_gemma4ec_9b.sh   # 9B model
+sbatch slurm/run_train_gemma4ec_2b.sh   # 2B model
 ```
 
 The scripts configure GPU and memory resources and launch distributed training via 🤗 Accelerate. For authentication details, see [`docs/huggingface_authentication.md`](huggingface_authentication.md).

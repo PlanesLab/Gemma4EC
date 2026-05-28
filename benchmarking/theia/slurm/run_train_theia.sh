@@ -2,11 +2,10 @@
 # ============================================================
 # run_train_theia.sh
 #
-# Train the Theia MLP baseline on a given partition.
-# Set DB_NAME to one of: Rhea_Scaffold, Rhea_Stratified, Rhea_Time, Raw
+# Train the Theia MLP baseline on ECReact.
 #
 # Usage:
-#   DB_NAME=Rhea_Scaffold sbatch slurm/run_train_theia.sh
+#   sbatch benchmarking/theia/slurm/run_train_theia.sh
 # ============================================================
 
 #SBATCH --job-name=theia_train
@@ -37,8 +36,8 @@ echo "=========================================="
 PROJECT_ROOT=${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
 SCRATCH_ROOT=${SCRATCH_ROOT:-/scratch/$USER}
 
-DATA_ROOT="$PROJECT_ROOT/data/partitions/$DB_NAME"
-OUTPUT_DIR="$SCRATCH_ROOT/gemma4ec/theia_$DB_NAME/results"
+DATA_ROOT="$PROJECT_ROOT/data/ECReact"
+OUTPUT_DIR="$SCRATCH_ROOT/gemma4ec/theia/results"
 
 # ============================================================
 # ENVIRONMENT

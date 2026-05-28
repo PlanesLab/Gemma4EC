@@ -133,20 +133,6 @@ See [`results/README.md`](../results/README.md) for the full TSV schema.
 
 ---
 
-## Partition-level evaluation
-
-To re-evaluate a saved adapter on all Rhea partitions (no retraining):
-
-```bash
-# Single partition
-DB_NAME=Rhea_Time sbatch slurm/run_predict_partition.sh
-
-# All partitions
-bash slurm/submit_all_partitions.sh
-```
-
----
-
 ## Notes
 
 - Multi-GPU inference significantly improves throughput for large datasets.

@@ -406,8 +406,7 @@ def parse_args():
                         help="Human-readable name for the W&B run. "
                              "Defaults to '<wandb_group>_MMDD_HHMM'. (default: None)")
     parser.add_argument("--wandb_group", type=str, default=None,
-                        help="W&B run group. Use the partition name (e.g. Rhea_Scaffold) "
-                             "to cluster related runs together. (default: None)")
+                        help="W&B run group to cluster related runs together. (default: None)")
     parser.add_argument("--wandb_tags", type=str, nargs="+",
                         default=["TxGemma", "EC"],
                         help="Tags for the W&B run. (default: TxGemma EC)")

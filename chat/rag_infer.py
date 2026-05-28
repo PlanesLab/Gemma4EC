@@ -15,7 +15,7 @@ The BRENDA index (JSON) is built by chat/build_brenda_index.py.
 
 Usage:
     python chat/rag_infer.py \
-        --predict_adapter_dir results/Rhea_Stratified/results/best \
+        --predict_adapter_dir results/ECReact/results/best \
         --chat_adapter_dir    ./chat/checkpoints/best_model \
         --brenda_index        chat/data/brenda_index.json \
         --input_csv           data/ECReact/test.csv \
@@ -298,7 +298,7 @@ def parse_args():
     # predict model
     p.add_argument("--predict_adapter_dir", required=True,
                    help="Path to the Gemma4EC-Predict LoRA adapter "
-                        "(e.g. results/Rhea_Stratified/results/best)")
+                        "(e.g. results/ECReact/results/best)")
     p.add_argument("--predict_base_model_id", default="google/txgemma-9b-predict")
     # chat model
     p.add_argument("--chat_adapter_dir", required=True,

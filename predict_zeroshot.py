@@ -1,18 +1,13 @@
 """
 predict_zeroshot.py — Zero-shot EC number prediction with base TxGemma (no adapter).
 
-Runs inference on a Rhea partition test set. Predictions that are not in the
-required x.xx.xx format are retried up to --max_retries times before being
-marked as INVALID.
+Predictions that are not in the required x.xx.xx format are retried up to
+--max_retries times before being marked as INVALID.
 
 Usage:
     python predict_zeroshot.py \
-        --partition Rhea_Scaffold \
-        --partitions_root data/partitions \
+        --test_csv data/ECReact/test.csv \
         --wandb_entity miramon_team
-
-    # all three partitions via SLURM:
-    slurm/submit_predict_zeroshot.sh
 """
 
 from __future__ import annotations

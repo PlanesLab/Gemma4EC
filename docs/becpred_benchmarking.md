@@ -4,7 +4,7 @@ This document explains how to train and evaluate [BEC-Pred](https://github.com/K
 
 BEC-Pred is an EC number prediction model based on reaction fingerprints ([rxnfp](https://github.com/rxn4chemistry/rxnfp)) and a BERT-style classifier. It serves as a competitive baseline against Gemma4EC.
 
-> Training and evaluation scripts were sourced from the [original BEC-Pred repository](https://github.com/KeeliaQWJ/BEC-Pred) and adapted to run on the Gemma4EC benchmark partitions.
+> Training and evaluation scripts were sourced from the [original BEC-Pred repository](https://github.com/KeeliaQWJ/BEC-Pred) and adapted to run on the Gemma4EC ECReact benchmark.
 
 ---
 
@@ -34,16 +34,10 @@ conda activate becpred_gpu
 Use the SLURM scripts in `slurm/` from the repository root:
 
 ```bash
-# All three partitions at once
-bash slurm/submit_all_partitions_becpred.sh
-
-# Single partition
-DB_NAME=Rhea_Scaffold sbatch slurm/run_becpred.sh
-DB_NAME=Rhea_Stratified sbatch slurm/run_becpred.sh
-DB_NAME=Rhea_Time sbatch slurm/run_becpred.sh
+sbatch benchmarking/bec-pred/slurm/run_becpred.sh
 ```
 
-Results are written to `$SCRATCH/gemma4ec/becpred_<DB_NAME>/Results/results_test_ec.csv`.
+Results are written to `$SCRATCH/gemma4ec/becpred/Results/results_test_ec.csv`.
 
 ---
 
@@ -53,10 +47,7 @@ From the project root:
 
 ```bash
 chmod +x benchmarking/bec-pred/run_becpred.sh
-
-DB_NAME=Rhea_Scaffold \
-PROJECT_ROOT=$(pwd) \
-bash benchmarking/bec-pred/run_becpred.sh
+PROJECT_ROOT=$(pwd) bash benchmarking/bec-pred/run_becpred.sh
 ```
 
 ---
@@ -120,12 +111,12 @@ benchmarking/bec-pred/
 
 ## Reproducing the benchmark metrics
 
-Once `results_test_ec.csv` is available for each partition, compute the benchmark metrics from the project root:
+Once `results_test_ec.csv` is available, compute the benchmark metrics from the project root:
 
 ```bash
 cd results/
 python compute_weighted_metrics.py
-python compute_per_class_and_splits.py
+python compute_per_class.py
 ```
 
 See [`results/README.md`](../results/README.md) for a full description of the metric computation pipeline.

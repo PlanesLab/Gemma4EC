@@ -13,7 +13,6 @@
       • <a href="#mechanistic-explanation">Mechanistic explanation</a><br>
       • <a href="#zero-shot-evaluation">Zero-shot evaluation</a><br>
       • <a href="#fine-tuning">Fine-tuning</a><br>
-      • <a href="#benchmark-partitions">Benchmark partitions</a><br>
       • <a href="#hpc--slurm">HPC / SLURM</a><br>
       • <a href="#results">Results</a><br>
       • <a href="#project-structure">Project structure</a><br>
@@ -73,17 +72,13 @@ All datasets are included in this repository under `data/`.
 
 ```
 data/
-├── ECReact/
-│   ├── train.csv   (~49 k reactions)
-│   ├── val.csv     (~6 k reactions)
-│   └── test.csv    (~6 k reactions)
-└── partitions/
-    ├── Rhea_Scaffold/   train / val / test
-    ├── Rhea_Stratified/ train / val / test
-    └── Rhea_Time/       train / val / test
+└── ECReact/
+    ├── train.csv   (~49 k reactions)
+    ├── val.csv     (~6 k reactions)
+    └── test.csv    (~6 k reactions)
 ```
 
-The ECReact split is derived from [ECReact-1.0](https://github.com/rxn4chemistry/biocatalysis-model/blob/main/data/ecreact-1.0.csv), a curated dataset of enzyme-catalysed reactions in SMILES format. The three Rhea partitions are built from the same reactions re-split using [Rhea](https://www.rhea-db.org/) metadata (scaffold, stratified, time).
+The ECReact split is derived from [ECReact-1.0](https://github.com/rxn4chemistry/biocatalysis-model/blob/main/data/ecreact-1.0.csv), a curated dataset of enzyme-catalysed reactions in SMILES format.
 
 Each CSV contains at minimum:
 
@@ -92,8 +87,6 @@ Each CSV contains at minimum:
 | `rxn_smiles` | Reaction SMILES string |
 | `ec` | EC number label (e.g. `1.1.1.1`) |
 
-The three Rhea partitions are described in the [Benchmark partitions](#benchmark-partitions) section.
-To regenerate partition splits from `data/ECReact/`, see [`scripts/prepare_db.py`](scripts/prepare_db.py).
 
 ---
 
@@ -183,9 +176,6 @@ python infer_attention.py
 
 # Low-VRAM option (4-bit NF4, ~12 GB)
 python infer_attention.py --load_in_4bit
-
-# Use a Rhea partition adapter
-python infer_attention.py --adapter_path results/Rhea_Stratified/results/best
 
 # Custom input
 python infer_attention.py --test_csv my_reactions.csv --n 50 --output_dir ./my_attn
@@ -281,70 +271,20 @@ Full documentation: [`docs/training.md`](docs/training.md)
 
 ---
 
-## Benchmark partitions
-
-To assess generalisation beyond random splits, we evaluate Gemma4EC on three [Rhea](https://www.rhea-db.org/) partitions
-built from the same underlying dataset:
-
-| Partition | Split strategy | Challenge |
-|---|---|---|
-| **Rhea_Scaffold** | Reactions grouped by Murcko scaffold — different scaffolds in train vs. test | Chemical novelty |
-| **Rhea_Stratified** | Stratified random split preserving EC class balance | Standard baseline |
-| **Rhea_Time** | Chronological split by reaction entry date | Temporal generalisation |
-
-Data for all three partitions is in `data/partitions/`. To re-generate them from `data/ECReact/`:
-
-```bash
-python scripts/prepare_db.py --db Rhea_Scaffold   --out_root data/partitions
-python scripts/prepare_db.py --db Rhea_Stratified --out_root data/partitions
-python scripts/prepare_db.py --db Rhea_Time       --out_root data/partitions
-```
-
-To aggregate metrics across all models and partitions into a comparison table:
-
-```bash
-python scripts/summarize_results.py
-```
-
----
-
 ## HPC / SLURM
 
 For running on a cluster, all Gemma4EC workflows have SLURM scripts in `slurm/`. Baseline model workflows are in their own subdirectories under `benchmarking/`.
 
-**Fine-tune Gemma4EC-9B on all three partitions:**
+**Fine-tune Gemma4EC-9B:**
 ```bash
 export HUGGINGFACE_TOKEN=hf_...
 export WANDB_API_KEY=...
-bash slurm/submit_all_partitions.sh
+sbatch slurm/run_train_gemma4ec_9b.sh
 ```
 
-**Fine-tune Gemma4EC-2B on all three partitions:**
+**Fine-tune Gemma4EC-2B:**
 ```bash
-bash slurm/submit_all_partitions_2b.sh
-```
-
-**Theia baseline on all three partitions:**
-```bash
-bash benchmarking/theia/slurm/submit_all_partitions_theia.sh
-```
-
-**BEC-Pred baseline on all three partitions:**
-```bash
-bash benchmarking/bec-pred/slurm/submit_all_partitions_becpred.sh
-```
-
-**Single partition (any model):**
-```bash
-DB_NAME=Rhea_Time sbatch slurm/run_train_partition.sh                           # 9B
-DB_NAME=Rhea_Time sbatch slurm/run_train_partition_2b.sh                        # 2B
-DB_NAME=Rhea_Time sbatch benchmarking/theia/slurm/run_train_theia.sh            # Theia
-DB_NAME=Rhea_Time sbatch benchmarking/bec-pred/slurm/run_becpred.sh             # BEC-Pred
-```
-
-**Re-evaluate a saved checkpoint (no retraining):**
-```bash
-DB_NAME=Rhea_Time sbatch slurm/run_predict_partition.sh
+sbatch slurm/run_train_gemma4ec_2b.sh
 ```
 
 **Zero-shot baseline:**
@@ -374,19 +314,7 @@ Support-weighted MCC across all EC sub-subclasses:
 | [ChatGPT-4.1-mini](https://openai.com/es-ES/api/) | 0.224 | 0.087 | 0.342 | 0.136 | 0.051 | 0.057 | 0.028 | 0.000 |
 | [TxGemma-9b (zero-shot)](https://deepmind.google/models/gemma/txgemma/) | ~0.000 | — | — | — | — | — | — | — |
 
-### Benchmark partitions (Rhea splits)
-
-Support-weighted MCC on the three [Rhea](https://www.rhea-db.org/) benchmark partitions:
-
-| Partition | Gemma4EC-9b | Gemma4EC-2b | BEC-Pred |
-|---|---|---|---|
-| **Rhea_Scaffold** | **0.633** | 0.602 | 0.618 |
-| **Rhea_Stratified** | **0.894** | 0.886 | 0.847 |
-| **Rhea_Time** | **0.760** | 0.747 | 0.700 |
-
-> Rhea_Scaffold splits by Murcko scaffold (chemical novelty challenge); Rhea_Stratified is a balanced random split; Rhea_Time is a chronological split (temporal generalisation). See [Benchmark partitions](#benchmark-partitions) for descriptions.
-
-Metrics computed with [`results/compute_weighted_metrics.py`](results/compute_weighted_metrics.py) and [`results/compute_per_class_and_splits.py`](results/compute_per_class_and_splits.py). Full tables: [`results/summary/per_class_mcc.csv`](results/summary/per_class_mcc.csv) · [`results/summary/splits_weighted_mcc.csv`](results/summary/splits_weighted_mcc.csv).
+Metrics computed with [`results/compute_weighted_metrics.py`](results/compute_weighted_metrics.py) and [`results/compute_per_class.py`](results/compute_per_class.py). Full table: [`results/summary/per_class_mcc.csv`](results/summary/per_class_mcc.csv).
 
 ---
 
@@ -401,8 +329,7 @@ Gemma4EC/
 ├── infer_attention.py             # Batch attention inference + BertViz HTML/PNG outputs
 │
 ├── data/
-│   ├── ECReact/                   # Full dataset from ECReact-1.0 (train / val / test CSVs)
-│   └── partitions/                # Rhea_Scaffold / Rhea_Stratified / Rhea_Time splits
+│   └── ECReact/                   # Full dataset from ECReact-1.0 (train / val / test CSVs)
 │
 ├── envs/
 │   └── gemma4ec_env.yaml          # Conda environment
@@ -414,21 +341,14 @@ Gemma4EC/
 │
 ├── results/
 │   ├── compute_weighted_metrics.py        # Reproduce main benchmark table (weighted MCC)
-│   ├── compute_per_class_and_splits.py    # Reproduce per-class and partition tables
+│   ├── compute_per_class.py               # Reproduce per-class MCC table
 │   ├── bec-pred/
 │   │   └── results_test_ec.csv            # BEC-Pred predictions on the standard test set
 │   ├── summary/
 │   │   ├── weighted_metrics.csv           # All models — overall weighted MCC/PPV/Recall
-│   │   ├── per_class_mcc.csv              # All models — MCC per EC class (1–7)
-│   │   └── splits_weighted_mcc.csv        # Rhea splits — Gemma4EC / BEC-Pred / Theia
+│   │   └── per_class_mcc.csv              # All models — MCC per EC class (1–7)
 │   ├── ECReact/                           # Gemma4EC-9b fine-tuned on ECReact
 │   │   └── results/best/                  # adapter_config.json + predictions TSV
-│   ├── Rhea_Scaffold/                     # Gemma4EC-9b — Rhea_Scaffold
-│   ├── Rhea_Stratified/                   # Gemma4EC-9b — Rhea_Stratified
-│   ├── Rhea_Time/                         # Gemma4EC-9b — Rhea_Time
-│   ├── Rhea_Scaffold_2b/                  # Gemma4EC-2b — Rhea_Scaffold
-│   ├── Rhea_Stratified_2b/                # Gemma4EC-2b — Rhea_Stratified
-│   ├── Rhea_Time_2b/                      # Gemma4EC-2b — Rhea_Time
 │   ├── Gemma4EC-9b/                       # 9b predictions on ECReact test set
 │   ├── Gemma4EC-2b/                       # 2b predictions on ECReact test set
 │   ├── APIs/                              # API model predictions (OpenAI / Gemini)
@@ -436,19 +356,14 @@ Gemma4EC/
 │   └── zeroshot/                          # TxGemma zero-shot predictions
 │
 ├── scripts/
-│   ├── prepare_db.py              # Generate Rhea partition splits
 │   ├── canonicalize_smiles.py     # Canonicalize rxn_smiles in all data CSVs
 │   ├── summarize_results.py       # Aggregate metrics across models
 │   ├── slim_bertviz.py            # Slim down BertViz HTML output files
 │   └── make_attn_plotly.py        # Convert BertViz HTML to Plotly visualisations
 │
 ├── slurm/                         # SLURM scripts for Gemma4EC workflows
-│   ├── run_train_partition.sh        # Fine-tune TxGemma-9B on one Rhea partition
-│   ├── submit_all_partitions.sh      # Submit all three 9B partition jobs
-│   ├── run_train_partition_2b.sh     # Fine-tune TxGemma-2B on one Rhea partition
-│   ├── submit_all_partitions_2b.sh   # Submit all three 2B partition jobs
-│   ├── run_train_gemma4ec_9b.sh      # Fine-tune on raw ECReact (non-partitioned)
-│   ├── run_predict_partition.sh      # Evaluate a saved adapter (no retraining)
+│   ├── run_train_gemma4ec_9b.sh      # Fine-tune TxGemma-9B on ECReact
+│   ├── run_train_gemma4ec_2b.sh      # Fine-tune TxGemma-2B on ECReact
 │   ├── run_predict_gemma4ec.sh       # Large-scale prediction with a local adapter
 │   ├── run_predict_zeroshot.sh       # Zero-shot evaluation (no adapter)
 │   ├── run_predict_api.sh            # API benchmarking (OpenAI / Gemini)

@@ -3,7 +3,7 @@
 # run_predict_zeroshot.sh
 #
 # Zero-shot EC prediction with base TxGemma (no adapter).
-# Evaluates all three Rhea partitions in one job.
+# Evaluates on the ECReact test set.
 #
 # Usage:
 #   sbatch slurm/run_predict_zeroshot.sh

@@ -11,17 +11,15 @@ Supported TSV formats (auto-detected):
 
 Default search paths (all optional, used only if they exist):
   1. <project>/results/
-  2. <scratch>/gemma4ec/*/results/          (finetuned partition results)
-  3. <scratch>/gemma4ec/zeroshot/results/   (zeroshot run results)
+  2. <scratch>/gemma4ec/zeroshot/results/
 
 Usage:
     python scripts/summarize_results.py
 
     # custom paths
     python scripts/summarize_results.py \\
-        --search_dirs outputs/Rhea_Scaffold/results \\
+        --search_dirs outputs/results \\
                       outputs/zeroshot/results \\
-                      results \\
         --true_csv data/ECReact/test.csv \\
         --output_dir results/summary
 """
@@ -202,14 +200,13 @@ def _label_for_file(tsv: Path) -> str:
     Examples:
       .../results/APIs/chatgpt-5_1/test_predictions_...tsv  → "APIs/chatgpt-5_1"
       .../results/Gemma4EC-2b/predictions_test...tsv        → "Gemma4EC-2b"
-      .../gemma4ec/Rhea_Scaffold/results/predictions_...tsv → "Rhea_Scaffold"
       .../gemma4ec/zeroshot/results/zeroshot_test_...tsv    → "zeroshot"
     """
     parent      = tsv.parent       # immediate containing folder
     grandparent = parent.parent    # one level up
 
     # If the file lives directly in a 'results' folder, go up one more level
-    # to get the meaningful group name (e.g. Rhea_Scaffold, zeroshot)
+    # to get the meaningful group name (e.g. zeroshot)
     if parent.name == "results":
         return grandparent.name
 
@@ -232,13 +229,6 @@ def _default_search_dirs() -> list[Path]:
         project / "results",
         scratch / "gemma4ec" / "zeroshot" / "results",
     ]
-    # Partition result dirs: /scratch/$USER/gemma4ec/Rhea_*/results/
-    partition_root = scratch / "gemma4ec"
-    if partition_root.is_dir():
-        for sub in sorted(partition_root.iterdir()):
-            candidate = sub / "results"
-            if candidate.is_dir():
-                dirs.append(candidate)
     return dirs
 
 

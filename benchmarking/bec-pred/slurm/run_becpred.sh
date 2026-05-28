@@ -2,12 +2,10 @@
 # ============================================================
 # run_becpred.sh
 #
-# SLURM wrapper for the BEC-Pred pipeline on a single Rhea partition.
-# Uses partition-specific working directories so multiple partitions
-# can run concurrently without collisions.
+# SLURM wrapper for the BEC-Pred pipeline on the ECReact benchmark.
 #
 # Usage:
-#   DB_NAME=Rhea_Scaffold sbatch slurm/run_becpred.sh
+#   sbatch benchmarking/bec-pred/slurm/run_becpred.sh
 # ============================================================
 
 #SBATCH --job-name=becpred
@@ -24,7 +22,6 @@
 
 set -euo pipefail
 
-DB_NAME=${DB_NAME:-Rhea_Scaffold}
 PROJECT_ROOT=${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
 SCRATCH_ROOT=${SCRATCH_ROOT:-/scratch/$USER}
 
@@ -48,7 +45,7 @@ mkdir -p "$WORK_DIR/DB" "$WORK_DIR/model" "$WORK_DIR/Results"
 # Link static assets (vocab + MLM pretraining text files)
 ln -sfn "$PROJECT_ROOT/src/bec-pred/data" "$WORK_DIR/data"
 
-PARTITION_DIR="$PROJECT_ROOT/data/partitions/$DB_NAME"
+PARTITION_DIR="$PROJECT_ROOT/data/ECReact"
 BEC_SRC="$PROJECT_ROOT/src/bec-pred"
 RESULTS_DIR="$PROJECT_ROOT/results/BECPred"
 mkdir -p "$RESULTS_DIR"

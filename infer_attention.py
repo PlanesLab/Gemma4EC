@@ -19,11 +19,6 @@ Usage (defaults are ready to run from the Gemma4EC/ directory):
 GPU with < 20 GB VRAM — add --load_in_4bit (uses bitsandbytes NF4):
     python infer_attention.py --load_in_4bit
 
-Use a Rhea partition adapter instead:
-    python infer_attention.py --adapter_path results/Rhea_Stratified/results/best
-    python infer_attention.py --adapter_path results/Rhea_Time/results/best
-    python infer_attention.py --adapter_path results/Rhea_Scaffold/results/best
-
 Run with no adapter (base model only, zero-shot):
     python infer_attention.py --adapter_path ""
 
