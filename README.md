@@ -303,11 +303,11 @@ See [`slurm/README.md`](slurm/README.md) for the full list of Gemma4EC scripts a
 Support-weighted MCC across all EC sub-subclasses:
 
 | Model | Overall MCC | EC1 | EC2 | EC3 | EC4 | EC5 | EC6 | EC7 |
-|---|---|---|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|---|---|
 | **Gemma4EC-9b** | **0.903** | 0.847 | 0.971 | 0.771 | 0.848 | 0.779 | 0.895 | 0.433 |
+| Gemma4EC-2b | 0.897 | 0.852 | 0.970 | 0.734 | 0.819 | 0.773 | 0.868 | 0.426 |
 | [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) | 0.886 | 0.799 | 0.965 | 0.777 | 0.834 | 0.681 | 0.869 | 0.314 |
 | [Theia](https://github.com/daenuprobst/theia) | 0.884 | 0.824 | 0.961 | 0.743 | 0.808 | 0.729 | 0.829 | 0.501 |
-| Gemma4EC-2b | 0.897 | 0.852 | 0.970 | 0.734 | 0.819 | 0.773 | 0.868 | 0.426 |
 | [Gemini 2.5 Flash](https://ai.google.dev/gemini-api/docs?hl=es-419) | 0.774 | 0.593 | 0.927 | 0.555 | 0.737 | 0.496 | 0.669 | 0.000 |
 | [ChatGPT-5 (v2)](https://openai.com/es-ES/api/) | 0.531 | 0.354 | 0.721 | 0.317 | 0.181 | 0.383 | 0.180 | 0.000 |
 | [ChatGPT-5.1](https://openai.com/es-ES/api/) | 0.297 | 0.105 | 0.430 | 0.232 | 0.115 | 0.323 | 0.097 | 0.000 |
