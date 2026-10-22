@@ -8,13 +8,13 @@ evaluates on the test set. Outputs are saved to --output_dir:
     <output_dir>/model.pt             — model weights
     <output_dir>/label_encoder.pkl    — sklearn LabelEncoder
     <output_dir>/training_metrics.pkl — per-epoch loss/acc
-    <output_dir>/test_predictions.tsv — TSV compatible with summarize_results.py
+    <output_dir>/test_predictions.tsv — TSV of predictions
 
 Usage:
     python train_theia.py \
-        --train_csv data/ECReact/train.csv \
-        --val_csv   data/ECReact/val.csv \
-        --test_csv  data/ECReact/test.csv \
+        --train_csv data/ECReact_seeds_strat_dedup/seed0/train.csv \
+        --val_csv   data/ECReact_seeds_strat_dedup/seed0/val.csv \
+        --test_csv  data/ECReact_seeds_strat_dedup/seed0/test.csv \
         --output_dir outputs/theia_raw
 """
 
@@ -31,14 +31,17 @@ import pandas as pd
 import torch
 import torch.nn.functional as nnf
 from drfp import DrfpEncoder
-from sklearn.exceptions import InconsistentVersionWarning
 from sklearn.metrics import accuracy_score, f1_score, matthews_corrcoef
 from sklearn.preprocessing import LabelEncoder
 from theia.ml import MLPClassifier, ReactionDataset
 from torch.optim.lr_scheduler import ExponentialLR
 from torch.utils.data import DataLoader
 
-warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
+try:
+    from sklearn.exceptions import InconsistentVersionWarning
+    warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
+except ImportError:
+    pass
 
 
 def _compute_metrics(true_labels, pred_labels):
@@ -181,6 +184,21 @@ def main():
 
     n_classes = len(le.classes_)
     model = MLPClassifier(_FPS_LENGTH, args.hidden_dim, n_classes).to(device)
+
+    if args.pretrained_weights and Path(args.pretrained_weights).exists():
+        print(f"[pretrain] Loading weights from: {args.pretrained_weights}")
+        state = torch.load(args.pretrained_weights, map_location="cpu", weights_only=True)
+        # Load with strict=False so layers with mismatched dims are skipped
+        missing, unexpected = model.load_state_dict(state, strict=False)
+        if missing:
+            print(f"[pretrain] {len(missing)} missing keys (output layer likely reinit): {missing[:4]}")
+        if unexpected:
+            print(f"[pretrain] {len(unexpected)} unexpected keys ignored: {unexpected[:4]}")
+        print(f"[pretrain] Weights loaded. Output layer has {n_classes} classes.")
+    else:
+        if args.pretrained_weights:
+            print(f"[pretrain] Warning: --pretrained_weights not found at {args.pretrained_weights} — training from scratch")
+
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     scheduler = ExponentialLR(optimizer, gamma=_LR_GAMMA)
     criterion = torch.nn.CrossEntropyLoss()
@@ -282,15 +300,19 @@ def parse_args():
         description="Train Theia MLP on a raw CSV partition.",
         allow_abbrev=False,
     )
-    ap.add_argument("--train_csv",   type=str, default="data/ECReact/train.csv")
-    ap.add_argument("--val_csv",     type=str, default="data/ECReact/val.csv")
-    ap.add_argument("--test_csv",    type=str, default="data/ECReact/test.csv")
+    ap.add_argument("--train_csv",   type=str, default="data/ECReact_seeds_strat_dedup/seed0/train.csv")
+    ap.add_argument("--val_csv",     type=str, default="data/ECReact_seeds_strat_dedup/seed0/val.csv")
+    ap.add_argument("--test_csv",    type=str, default="data/ECReact_seeds_strat_dedup/seed0/test.csv")
     ap.add_argument("--output_dir",  type=str, required=True,
                     help="Directory to save model, label encoder, metrics, and predictions.")
     ap.add_argument("--hidden_dim",  type=int, default=_HIDDEN_DIM)
     ap.add_argument("--epochs",      type=int, default=_EPOCHS)
     ap.add_argument("--patience",    type=int, default=_PATIENCE)
     ap.add_argument("--lr",          type=float, default=_LR)
+    ap.add_argument("--pretrained_weights", type=str, default=None,
+                    help="Path to an existing model.pt to load before training. "
+                         "Hidden layers are reused; the output layer is reinitialized "
+                         "when the number of EC classes differs.")
     return ap.parse_args()
 
 

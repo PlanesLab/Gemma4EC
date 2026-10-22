@@ -1,0 +1,25 @@
+# Gemma4EC site configuration.
+# Copy to config.sh and edit (config.sh is git-ignored). SLURM scripts source ./config.sh when it exists;
+# for interactive use run `source config.sh` once per shell.
+
+# ── Python interpreters ────────────────────────────────────────────────────────
+export GEMMA4EC_PY=python            # python of the gemma4ec env (envs/gemma4ec_env.yaml)
+export RXNMAPPER_PY=python           # python of the rxnmapper env (envs/rxnmapper_requirements.txt); chat only
+
+# ── Where large outputs go (predictions, seed runs, caches) ───────────────────
+export GEMMA4EC_WORK="$PWD/work"
+export SCRATCH_ROOT="$GEMMA4EC_WORK"
+export HF_HOME="$GEMMA4EC_WORK/hf"   # Hugging Face cache (TxGemma weights, ~20 GB for the 9B model)
+
+# ── Reference data for the chat explanations (see docs/chat.md) ──────────────
+export BRENDA_FILE="data/external/brenda_2026_1.txt"   # BRENDA flat file (free registration at brenda-enzymes.org)
+export METANETX_DIR="data/external/metanetx"            # reac_prop.tsv, chem_prop.tsv, reac_smi.csv
+
+# ── Benchmark reproduction only (see docs/benchmark.md) ──────────────────────
+export ENVS="$HOME/envs"  # folder with the competing methods' environments (theia, becpred_gpu, claire, clean_ec)
+export ECN_ROOT=""        # ECNumberPrediction checkout with the SIMMER and SelenzymeRF methods
+export CLAIRE_ROOT=""     # CLAIRE checkout
+export CLEAN_EC_PY=python3
+
+# ── Optional: Weights & Biases team for training/eval logs ───────────────────
+export WANDB_ENTITY=""

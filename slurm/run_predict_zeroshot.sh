@@ -22,6 +22,7 @@
 #SBATCH --output=logs/predict_zeroshot_%j.out
 
 set -euo pipefail
+[[ -f "${PROJECT_ROOT:-$PWD}/config.sh" ]] && source "${PROJECT_ROOT:-$PWD}/config.sh"   # site paths (config.sh.example)
 
 echo "=========================================="
 echo "Zero-shot prediction"
@@ -33,10 +34,10 @@ echo "=========================================="
 # PATHS
 # ============================================================
 PROJECT_ROOT=${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
-SCRATCH_ROOT=${SCRATCH_ROOT:-/scratch/$USER}
+SCRATCH_ROOT=${SCRATCH_ROOT:-$PWD/work}
 CACHE_ROOT=${CACHE_ROOT:-"$SCRATCH_ROOT/.cache/gemma4ec"}
 
-TEST_CSV="$PROJECT_ROOT/data/ECReact/test.csv"
+TEST_CSV="$PROJECT_ROOT/data/ECReact_seeds_strat_dedup/seed0/test.csv"
 OUTPUT_FOLDER="$SCRATCH_ROOT/gemma4ec/zeroshot/results"
 
 MODEL_ID=${MODEL_ID:-"google/txgemma-9b-predict"}
@@ -46,7 +47,7 @@ SAVE_DIRECTORY="$SCRATCH_ROOT/gemma4ec/base_models/txgemma_9b"
 # W&B
 # ============================================================
 WANDB_PROJECT="Gemma4EC-partitions"
-WANDB_ENTITY=${WANDB_ENTITY:-"miramon_team"}
+WANDB_ENTITY=${WANDB_ENTITY:-}   # optional W&B team (config.sh)
 
 # ============================================================
 # INFERENCE SETTINGS
@@ -57,7 +58,7 @@ MAX_RETRIES=5
 # ============================================================
 # ENVIRONMENT
 # ============================================================
-CONDA_ENV=${CONDA_ENV:-/scratch/$USER/conda_envs/gemma4ec}
+CONDA_ENV=${CONDA_ENV:-gemma4ec}
 PYTHON="$CONDA_ENV/bin/python"
 export PATH="$CONDA_ENV/bin:$PATH"
 export PYTHONPATH="$PROJECT_ROOT:${PYTHONPATH:-}"
@@ -117,7 +118,7 @@ mkdir -p "$OUTPUT_FOLDER" logs
     --max_retries "$MAX_RETRIES" \
     --hf_token "$HUGGINGFACE_TOKEN" \
     --wandb_project "$WANDB_PROJECT" \
-    --wandb_entity "$WANDB_ENTITY" \
+    ${WANDB_ENTITY:+--wandb_entity "$WANDB_ENTITY"} \
     $DISABLE_WANDB
 
 echo "=========================================="

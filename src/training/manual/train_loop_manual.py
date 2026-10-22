@@ -3,6 +3,7 @@
 import math
 import time
 import os
+from contextlib import ExitStack
 from itertools import chain
 from typing import Optional
 import wandb
@@ -220,6 +221,14 @@ def train_manual(
 
         # 5) # ---- Main training loop over batches : Entrenamiento con el mismo iterador (primero el batch ya extraído) ----
         for step, batch in enumerate(chain([first_batch], it), start=0):
+            # DDP: all-reduce gradients only on the micro-batch that completes an optimizer update
+            # (or the last of the epoch, which feeds the remainder update below). Both forward and
+            # backward must run inside no_sync for DDP to skip the all-reduce.
+            sync_now = ((step + 1) % max(1, grad_acc_steps) == 0) or (step + 1 == micro_batches_per_epoch)
+            sync_ctx = ExitStack()
+            if not sync_now:
+                sync_ctx.enter_context(accelerator.no_sync(model))
+
             with accelerator.autocast(): # activa AMP (fp16/bf16) de forma segura según la config de Accelerate. Es lo mismo que hace Trainer cuando le pasas fp16=True/bf16=True: 
                                         # operaciones en media precisión para acelerar y reducir VRAM, manteniendo la estabilidad.
                 mb = {k: v.to(accelerator.device) for k, v in batch.items() if k != "row_ids"}
@@ -254,6 +263,7 @@ def train_manual(
             # --- grad accumulation ---
             loss = loss / max(1, grad_acc_steps) # Así, cada micro-batch aporta 1/N del gradiente medio; cuando sumas N veces, obtienes exactamente el gradiente medio del batch grande.
             accelerator.backward(loss) # (acumulando gradientes en param.grad)
+            sync_ctx.close()
             win_loss += loss.item()
 
              # --- contamos micro-batches de la época ---

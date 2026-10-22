@@ -6,8 +6,8 @@ Predictions that are not in the required x.xx.xx format are retried up to
 
 Usage:
     python predict_zeroshot.py \
-        --test_csv data/ECReact/test.csv \
-        --wandb_entity miramon_team
+        --test_csv data/ECReact_seeds_strat_dedup/seed0/test.csv \
+        --wandb_entity <your_team>
 """
 
 from __future__ import annotations
@@ -271,9 +271,9 @@ def parse_args():
         allow_abbrev=False,
     )
     ap.add_argument("--test_csv", type=str,
-                    default="./data/ECReact/test.csv",
+                    default="./data/ECReact_seeds_strat_dedup/seed0/test.csv",
                     help="CSV file with rxn_smiles (and optionally ec) columns. "
-                         "(default: ./data/ECReact/test.csv)")
+                         "(default: ./data/ECReact_seeds_strat_dedup/seed0/test.csv)")
     ap.add_argument("--output_folder", type=str,
                     default="./outputs/zeroshot",
                     help="Folder to save prediction TSVs. (default: ./outputs/zeroshot)")

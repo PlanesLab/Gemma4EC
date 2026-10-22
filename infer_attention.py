@@ -6,7 +6,9 @@ Samples 10 reactions from the raw test partition, predicts EC numbers with
 the fine-tuned Gemma4EC adapter, and saves per-reaction:
   - BertViz head_view HTML  (interactive, open in a browser)
   - attention heatmap PNG   (avg attention of EC tokens to input, SMILES highlighted)
-  - summary.tsv             (smiles / true_ec / predicted_ec / correct flags)
+  - <tag>_smiles_attn.npz   (SMILES tokens, attention from the EC-generating positions
+                              averaged over all layers/heads, char span of each token)
+  - summary.tsv             (smiles / true_ec / predicted_ec / top-k ECs / correct flags)
 
 Setup (one-time — install bertviz into the gemma4ec env):
     conda activate gemma4ec
@@ -41,8 +43,8 @@ import torch
 _HERE = Path(__file__).parent
 
 BASE_MODEL = "google/txgemma-9b-predict"
-ADAPTER    = str(_HERE / "results/ECReact/results/best")
-TEST_CSV   = str(_HERE / "data/ECReact/test.csv")
+ADAPTER    = str(_HERE / "models/Gemma4EC-9B-Predict")   # from huggingface.co/PlanesLab/Gemma4EC-9B-Predict
+TEST_CSV   = str(_HERE / "data/ECReact_seeds_strat_dedup/seed0/test.csv")
 PROMPTS    = str(_HERE / "prompts/prompts.json")
 TEMPLATE   = "EC_NUMBER_PROMPT_2"
 ANSWER_MK  = "Answer:"
@@ -61,9 +63,10 @@ def parse_args():
     p.add_argument("--prompts_json", default=PROMPTS)
     p.add_argument("--template_key", default=TEMPLATE)
     p.add_argument("--output_dir",  default="./attn_out")
-    p.add_argument("--n",   type=int, default=10, help="Reactions to sample")
+    p.add_argument("--n",   type=int, default=10,
+                   help="Reactions to sample at random; 0 = every row, in input order")
     p.add_argument("--seed", type=int, default=42)
-    p.add_argument("--max_tokens", type=int, default=400,
+    p.add_argument("--max_tokens", type=int, default=1024,
                    help="Max prompt tokens (SMILES are long; truncated if needed)")
     p.add_argument("--load_in_4bit", action="store_true",
                    help="4-bit NF4 quantization — needed if GPU VRAM < 20 GB")
@@ -93,6 +96,14 @@ def load_model_and_tokenizer(base_path, adapter_path, load_in_4bit):
             quantization_config=quant,
             attn_implementation="eager",   # needed for output_attentions
             device_map="auto",
+        )
+    elif not torch.cuda.is_available():               # CPU fallback (no GPU free): float32
+        print("[load] Base model (float32, CPU) …")
+        model = AutoModelForCausalLM.from_pretrained(
+            base_path,
+            torch_dtype=torch.float32,
+            attn_implementation="eager",
+            device_map="cpu",
         )
     else:
         print("[load] Base model (bfloat16) …")
@@ -156,6 +167,43 @@ def smiles_token_span(prompt: str, tok, max_tokens: int):
     tok_end   = next((i for i, (s, e) in enumerate(offsets) if s >= char_end), len(offsets))
 
     return tok_start, tok_end
+
+
+def smiles_token_offsets(prompt: str, tok, max_tokens: int, sm_start: int, sm_end: int):
+    """Character span of each SMILES token, relative to the start of the SMILES string."""
+    enc = tok(prompt, truncation=True, max_length=max_tokens, return_offsets_mapping=True)
+    char0 = prompt.find("Reaction SMILES:") + len("Reaction SMILES:") + 1
+    return [(max(0, s - char0), max(0, e - char0)) for s, e in enc["offset_mapping"][sm_start:sm_end]]
+
+
+def smiles_attention(attention_2d, prompt_len, sm_start, sm_end):
+    """
+    Attention paid to each SMILES token by the positions that generate the EC number
+    (the last prompt token, which emits the first EC token, through the second-to-last
+    generated token), averaged over ALL layers and heads, renormalized over the SMILES.
+    """
+    stacked = torch.stack(attention_2d)                      # [layers, heads, seq, seq]
+    seq_len = stacked.shape[-1]
+    q = list(range(prompt_len - 1, max(prompt_len, seq_len - 1)))
+    vec = stacked[:, :, q, sm_start:sm_end].mean(dim=(0, 1, 2)).numpy()
+    return vec / (vec.sum() + 1e-12)
+
+
+@torch.no_grad()
+def topk_predictions(model, tok, prompt, max_tokens, k=3, max_new_tokens=8):
+    """Top-k distinct EC predictions from beam search with renormalized sequence probabilities."""
+    device = next(model.parameters()).device
+    enc = tok(prompt, return_tensors="pt", truncation=True, max_length=max_tokens).to(device)
+    out = model.generate(**enc, max_new_tokens=max_new_tokens, num_beams=max(5, k),
+                         num_return_sequences=max(5, k), length_penalty=0.0, do_sample=False,
+                         output_scores=True, return_dict_in_generate=True)
+    cands = {}
+    for seq, score in zip(out.sequences, out.sequences_scores):
+        ec = parse_ec(tok.decode(seq[enc.input_ids.shape[1]:], skip_special_tokens=True))
+        if ec and ec not in cands:
+            cands[ec] = float(score.exp())
+    total = sum(cands.values()) or 1.0
+    return [(ec, p / total) for ec, p in list(cands.items())[:k]]
 
 
 # ── inference + attentions ────────────────────────────────────────────────────
@@ -363,8 +411,13 @@ def main():
         template = json.load(f)[args.template_key]
 
     df = pd.read_csv(args.test_csv)
-    sampled = df.sample(n=args.n, random_state=args.seed).reset_index(drop=True)
-    print(f"Sampled {args.n} reactions (seed={args.seed}) from {args.test_csv}\n")
+    if args.n <= 0 or args.n >= len(df):
+        sampled = df.reset_index(drop=True)
+        args.n = len(df)
+        print(f"Using all {args.n} reactions from {args.test_csv}\n")
+    else:
+        sampled = df.sample(n=args.n, random_state=args.seed).reset_index(drop=True)
+        print(f"Sampled {args.n} reactions (seed={args.seed}) from {args.test_csv}\n")
 
     model, tok = load_model_and_tokenizer(
         args.base_model_path,
@@ -375,7 +428,7 @@ def main():
     rows = []
     for i, row in sampled.iterrows():
         smiles  = row["rxn_smiles"]
-        true_ec = str(row["ec"])
+        true_ec = str(row["ec"]) if "ec" in row and pd.notna(row["ec"]) else ""   # optional column
         prompt  = template.format(reaction_smiles=smiles)
 
         print(f"── reaction {i+1:02d}/{args.n}  true EC: {true_ec} ──")
@@ -389,6 +442,13 @@ def main():
         sm_start, sm_end = smiles_token_span(prompt, tok, args.max_tokens)
 
         tag = f"rxn{i+1:02d}"
+        topk = topk_predictions(model, tok, prompt, args.max_tokens)
+        print(f"   top-k:         {', '.join(f'{ec} ({p:.0%})' for ec, p in topk)}")
+        if sm_start is not None:
+            np.savez(out_dir / f"{tag}_smiles_attn.npz",
+                     tokens=np.array(tokens[sm_start:sm_end], dtype=object),
+                     weights=smiles_attention(attention_2d, prompt_len, sm_start, sm_end),
+                     char_spans=np.array(smiles_token_offsets(prompt, tok, args.max_tokens, sm_start, sm_end)))
         save_bertviz_html(attention, tokens,           out_dir / f"{tag}_bertviz.html",
                           sm_start=sm_start, prompt_len=prompt_len)
         save_heatmap(
@@ -406,6 +466,7 @@ def main():
             "correct_L3":   predicted_ec.strip() == true_ec.strip(),
             "correct_L1":   (bool(predicted_ec) and bool(true_ec)
                              and predicted_ec[0] == true_ec[0]),
+            "topk_ec":      ";".join(f"{ec}:{p:.3f}" for ec, p in topk),
             "smiles_tok_start": sm_start,
             "smiles_tok_end":   sm_end,
             "total_tokens":     len(tokens),

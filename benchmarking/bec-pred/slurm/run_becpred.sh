@@ -21,9 +21,10 @@
 #SBATCH --output=logs/becpred_%x_%j.out
 
 set -euo pipefail
+[[ -f "${PROJECT_ROOT:-$PWD}/config.sh" ]] && source "${PROJECT_ROOT:-$PWD}/config.sh"   # site paths (config.sh.example)
 
 PROJECT_ROOT=${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
-SCRATCH_ROOT=${SCRATCH_ROOT:-/scratch/$USER}
+SCRATCH_ROOT=${SCRATCH_ROOT:-$PWD/work}
 
 echo "============================================"
 echo "==== BEC-Pred: $DB_NAME"
@@ -31,7 +32,7 @@ echo "==== $(date)  |  $(hostname)"
 echo "============================================"
 
 # ── Environment ───────────────────────────────────────────────
-CONDA_ENV="$SCRATCH_ROOT/Envs/becpred_gpu"
+CONDA_ENV="${BECPRED_ENV:-$SCRATCH_ROOT/Envs/becpred_gpu}"
 PYTHON="$CONDA_ENV/bin/python"
 export PATH="$CONDA_ENV/bin:$PATH"
 
@@ -45,7 +46,7 @@ mkdir -p "$WORK_DIR/DB" "$WORK_DIR/model" "$WORK_DIR/Results"
 # Link static assets (vocab + MLM pretraining text files)
 ln -sfn "$PROJECT_ROOT/src/bec-pred/data" "$WORK_DIR/data"
 
-PARTITION_DIR="$PROJECT_ROOT/data/ECReact"
+PARTITION_DIR="$PROJECT_ROOT/data/ECReact_seeds_strat_dedup/seed0"
 BEC_SRC="$PROJECT_ROOT/src/bec-pred"
 RESULTS_DIR="$PROJECT_ROOT/results/BECPred"
 mkdir -p "$RESULTS_DIR"

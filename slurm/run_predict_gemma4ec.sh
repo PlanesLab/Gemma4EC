@@ -10,6 +10,7 @@
 #SBATCH --output=logs/predict_%j.out
 
 set -euo pipefail
+[[ -f "${PROJECT_ROOT:-$PWD}/config.sh" ]] && source "${PROJECT_ROOT:-$PWD}/config.sh"   # site paths (config.sh.example)
 
 echo "Starting Gemma4EC prediction job: $(date)"
 hostname
@@ -18,9 +19,9 @@ hostname
 # USER CONFIGURATION
 # =======================
 PROJECT_ROOT=${PROJECT_ROOT:-$PWD}
-SCRATCH_ROOT=${SCRATCH_ROOT:-/scratch/$USER}
+SCRATCH_ROOT=${SCRATCH_ROOT:-$PWD/work}
 
-RAW_DATA_FILE=${RAW_DATA_FILE:-"$PROJECT_ROOT/data/ECReact/test.csv"}
+RAW_DATA_FILE=${RAW_DATA_FILE:-"$PROJECT_ROOT/data/ECReact_seeds_strat_dedup/seed0/test.csv"}
 PROCESSED_DATA_FOLDER=${PROCESSED_DATA_FOLDER:-"$SCRATCH_ROOT/gemma4ec/predict/processed"}
 OUTPUT_FOLDER=${OUTPUT_FOLDER:-"$SCRATCH_ROOT/gemma4ec/predict/results"}
 

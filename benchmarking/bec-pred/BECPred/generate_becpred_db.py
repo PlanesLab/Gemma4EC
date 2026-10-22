@@ -173,9 +173,9 @@ def main():
     parser = argparse.ArgumentParser(description='Generate BEC-Pred Database (fixed).')
     parser.add_argument('--remove_incomplete', action='store_true',
                         help='Remove rows with incomplete EC numbers (missing 3rd part or non-numeric).')
-    parser.add_argument('--train_file', default='gemma4ec/data/ECReact/train.csv',
+    parser.add_argument('--train_file', default='gemma4ec/data/ECReact_seeds_strat_dedup/seed0/train.csv',
                         help='Input file treated as train (or used with split_mode=train).')
-    parser.add_argument('--val_file', default='gemma4ec/data/ECReact/val.csv',
+    parser.add_argument('--val_file', default='gemma4ec/data/ECReact_seeds_strat_dedup/seed0/val.csv',
                         help='Input file treated as val (or used with split_mode=val).')
     parser.add_argument('--output_dir', default='./DB/',
                         help='Directory to write CSV outputs.')

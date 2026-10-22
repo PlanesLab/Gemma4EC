@@ -21,6 +21,7 @@
 #SBATCH --output=logs/theia_%x_%j.out
 
 set -euo pipefail
+[[ -f "${PROJECT_ROOT:-$PWD}/config.sh" ]] && source "${PROJECT_ROOT:-$PWD}/config.sh"   # site paths (config.sh.example)
 
 DB_NAME=${DB_NAME:-Raw}
 
@@ -34,15 +35,15 @@ echo "=========================================="
 # PATHS
 # ============================================================
 PROJECT_ROOT=${PROJECT_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}
-SCRATCH_ROOT=${SCRATCH_ROOT:-/scratch/$USER}
+SCRATCH_ROOT=${SCRATCH_ROOT:-$PWD/work}
 
-DATA_ROOT="$PROJECT_ROOT/data/ECReact"
+DATA_ROOT="$PROJECT_ROOT/data/ECReact_seeds_strat_dedup/seed0"
 OUTPUT_DIR="$SCRATCH_ROOT/gemma4ec/theia/results"
 
 # ============================================================
 # ENVIRONMENT
 # ============================================================
-CONDA_ENV=${CONDA_ENV:-/scratch/$USER/Envs/gemma4ec}
+CONDA_ENV=${CONDA_ENV:-gemma4ec}
 PYTHON="$CONDA_ENV/bin/python"
 export PATH="$CONDA_ENV/bin:$PATH"
 export PYTHONPATH="$PROJECT_ROOT:${PYTHONPATH:-}"

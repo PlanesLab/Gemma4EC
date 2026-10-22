@@ -100,7 +100,8 @@ def evaluate_model(
     # Generation model
     gen_model = accelerator.unwrap_model(model)
     device = accelerator.device
-    gen_model.to(device)
+    if not getattr(gen_model, "is_quantized", False) and not getattr(gen_model.config, "quantization_config", None):
+        gen_model.to(device)
     gen_model.eval()
 
     # Free fragmented CUDA memory before generation to avoid OOM spikes

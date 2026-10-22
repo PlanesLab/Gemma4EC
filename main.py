@@ -30,7 +30,7 @@ import pandas as pd
 import wandb
 from accelerate import Accelerator
 from datasets import load_dataset
-from peft import get_peft_model
+from peft import get_peft_model, PeftModel
 
 from src.config import Config
 from src.datamod.templates import build_input_template_from_file
@@ -181,17 +181,24 @@ def main():
         )
 
     # ------------------------------------------------------------------
-    # Wrap model with LoRA / DoRA / AdaLoRA adapter
+    # Wrap model with LoRA adapter (or resume from existing adapter)
     # ------------------------------------------------------------------
-    peft_cfg = build_peft_config(
-        method=args.adapter_method,
-        r=args.lora_r,
-        lora_alpha=args.lora_alpha,
-        lora_dropout=args.lora_dropout,
-        target_modules=cfg.target_modules,
-        task_type="CAUSAL_LM",
-    )
-    model = get_peft_model(model, peft_cfg)
+    if args.resume_from_adapter and os.path.isdir(args.resume_from_adapter):
+        print(f"[main] Resuming from existing adapter: {args.resume_from_adapter}")
+        model = PeftModel.from_pretrained(model, args.resume_from_adapter, is_trainable=True)
+        for p in model.parameters():
+            if p.requires_grad:
+                p.data = p.data.float()
+    else:
+        peft_cfg = build_peft_config(
+            method=args.adapter_method,
+            r=args.lora_r,
+            lora_alpha=args.lora_alpha,
+            lora_dropout=args.lora_dropout,
+            target_modules=cfg.target_modules,
+            task_type="CAUSAL_LM",
+        )
+        model = get_peft_model(model, peft_cfg)
     model = apply_gradient_checkpointing_if_needed(model, args)
 
     # ------------------------------------------------------------------
@@ -281,6 +288,9 @@ def parse_args():
     parser.add_argument("--save_directory", type=str,
                         default="./local_txgemma_model",
                         help="Where to cache the downloaded base model. (default: ./local_txgemma_model)")
+    parser.add_argument("--resume_from_adapter", type=str, default=None,
+                        help="Path to an existing PEFT adapter directory to resume fine-tuning from. "
+                             "When set, skips building a new adapter config and loads the saved adapter weights.")
     parser.add_argument("--cache_dir", type=str,
                         default="./hfcache",
                         help="Hugging Face cache directory. (default: ./hfcache)")

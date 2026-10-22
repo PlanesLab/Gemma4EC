@@ -4,7 +4,7 @@ This directory contains the [BEC-Pred](https://github.com/KeeliaQWJ/BEC-Pred) pi
 
 BEC-Pred is an EC number prediction model based on reaction fingerprints ([rxnfp](https://github.com/rxn4chemistry/rxnfp)) and a BERT-style classifier. It is included here as a competitive baseline against Gemma4EC.
 
-> For a full benchmarking guide, see [`docs/becpred_benchmarking.md`](../../docs/becpred_benchmarking.md).
+> In the Gemma4EC benchmark this pipeline is run per seed by [`slurm/seeds/run_seed_becpred.sh`](../../slurm/seeds/run_seed_becpred.sh); see [`docs/benchmark.md`](../../docs/benchmark.md).
 
 ---
 
@@ -62,24 +62,40 @@ PROJECT_ROOT=$(pwd) bash benchmarking/bec-pred/run_becpred.sh
 
 ---
 
+## Pre-training corpus
+
+`pretrain.py` expects `data/mlm_train.txt` and `data/mlm_test.txt`: one reaction SMILES per line,
+from the training and validation splits. They are not shipped (large and fully derived); build them
+with, for a given seed,
+
+```bash
+python - <<'EOF'
+import pandas as pd
+for src, dst in (("train", "mlm_train"), ("val", "mlm_test")):
+    df = pd.read_csv(f"data/ECReact_seeds_strat_dedup/seed0/{src}.csv")
+    open(f"benchmarking/bec-pred/data/{dst}.txt", "w").write("\n".join(df.rxn_smiles) + "\n")
+EOF
+```
+
+In the Gemma4EC benchmark this step is run once; every seed then reuses the same label-free
+backbone in `BECPred/model/pretrained/`.
+
+---
+
 ## Directory structure
 
 ```
 benchmarking/bec-pred/
 ├── becpred_gpu.yml             # Conda environment
 ├── run_becpred.sh              # Main pipeline script (supports DB_NAME)
-├── DB/                         # Pre-built DB for the raw partition (train/val/test CSVs)
+├── data/vocab.txt              # SMILES tokenizer vocabulary
+├── Results/label_assigner.py   # Map class indices back to EC numbers
 └── BECPred/
-    ├── generate_becpred_db.py  # Convert partition CSVs to BEC-Pred format
-    ├── pretrain.py             # Pre-train rxnfp BERT backbone
-    ├── finetune_bec.py         # Fine-tune EC classifier
-    ├── eval_model.py           # Predict on test set
-    ├── Results/
-    │   ├── label_assigner.py   # Map class indices back to EC numbers
-    │   └── get_metrics.py      # Compute classification metrics
-    └── model/
-        ├── ecreact_model/      # Fine-tuned model checkpoint
-        └── pretrained/         # Pre-trained rxnfp backbone
+    ├── generate_becpred_db.py  # Convert split CSVs to BEC-Pred format
+    ├── pretrain.py             # Label-free MLM pre-training of the BERT backbone
+    ├── finetune_bec.py         # Fine-tune the EC classifier
+    ├── eval_model.py           # Predict on the test set
+    └── model/pretrained/       # Config of the pretrained backbone (weights are not in git)
 ```
 
 ---

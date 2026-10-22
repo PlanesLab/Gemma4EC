@@ -11,6 +11,7 @@
 #SBATCH --output=logs/train_9b_%j.out
 
 set -euo pipefail
+[[ -f "${PROJECT_ROOT:-$PWD}/config.sh" ]] && source "${PROJECT_ROOT:-$PWD}/config.sh"   # site paths (config.sh.example)
 
 echo "Starting Gemma4EC 9B training job: $(date)"
 hostname
@@ -19,10 +20,10 @@ hostname
 # USER CONFIGURATION
 # =======================
 PROJECT_ROOT=${PROJECT_ROOT:-$PWD}
-SCRATCH_ROOT=${SCRATCH_ROOT:-/scratch/$USER}
+SCRATCH_ROOT=${SCRATCH_ROOT:-$PWD/work}
 CACHE_ROOT=${CACHE_ROOT:-"$SCRATCH_ROOT/.cache/gemma4ec"}
 
-RAW_DATA_FOLDER=${RAW_DATA_FOLDER:-"$PROJECT_ROOT/data/ECReact"}
+RAW_DATA_FOLDER=${RAW_DATA_FOLDER:-"$PROJECT_ROOT/data/ECReact_seeds_strat_dedup/seed0"}
 USE_TEST=${USE_TEST:-True}
 
 PROCESSED_DATA_FOLDER=${PROCESSED_DATA_FOLDER:-"$SCRATCH_ROOT/gemma4ec/train_9b/processed"}
@@ -39,8 +40,8 @@ TEMPLATE_ALIAS="EC_NUMBER"
 # TRAINING HYPERPARAMS
 # =======================
 BATCH_SIZE=8
-EVAL_BATCH_SIZE=30
-GRAD_ACCUM_STEPS=4
+EVAL_BATCH_SIZE=${EVAL_BATCH_SIZE:-30}
+GRAD_ACCUM_STEPS=${GRAD_ACCUM_STEPS:-4}
 WARMUP_STEPS=2
 EPOCHS=30
 LR=5e-4
@@ -130,6 +131,7 @@ NUM_GPUS=$(nvidia-smi --list-gpus | wc -l)
 
 accelerate launch \
   --num_processes "$NUM_GPUS" \
+  --main_process_port "${MASTER_PORT:-29500}" \
   --num_machines 1 \
   --mixed_precision fp16 \
   --dynamo_backend no \
@@ -171,6 +173,10 @@ accelerate launch \
     --save_best "$SAVE_BEST" \
     --hf_token "$HUGGINGFACE_TOKEN" \
     --gradient_checkpointing True \
-    --ddp_find_unused_parameters False
+    --ddp_find_unused_parameters False \
+    ${WANDB_RUN_NAME:+--wandb_run_name "$WANDB_RUN_NAME"} \
+    ${WANDB_GROUP:+--wandb_group "$WANDB_GROUP"} \
+    ${WANDB_ENTITY:+--wandb_entity "$WANDB_ENTITY"} \
+    ${WANDB_PROJECT:+--wandb_project "$WANDB_PROJECT"}
 
 echo "Finished Gemma4EC 9B training job: $(date)"

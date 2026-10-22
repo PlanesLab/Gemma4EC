@@ -40,14 +40,14 @@ CCO.CC(=O)O>>CCOC(=O)C,2.7.8
 Place the raw file in:
 
 ```
-data/ECReact/raw_data.csv
+data/ECReact_seeds_strat_dedup/seed0/train.csv
 ```
 
 ---
 
 ## Dataset
 
-Training uses the ECReact dataset in `data/ECReact/` (train / val / test CSVs).
+Training uses a split of ECReact, e.g. `data/ECReact_seeds_strat_dedup/seed0/` (train / val / test CSVs, rebuilt by `scripts/make_seed_splits.py`).
 
 ---
 
@@ -78,7 +78,7 @@ Prompt selection is controlled via `--template_key` at runtime. The **recommende
 
 ```bash
 python main.py \
-  --raw_data_folder       data/ECReact \
+  --raw_data_folder       data/ECReact_seeds_strat_dedup/seed0 \
   --processed_data_folder data/processed \
   --prompts_json_path     prompts/prompts.json \
   --template_key          EC_NUMBER_PROMPT_2 \
@@ -207,7 +207,7 @@ Gemma4EC provides example SLURM scripts for large-scale training on multi-GPU sy
 export HUGGINGFACE_TOKEN=hf_...
 export WANDB_API_KEY=...
 sbatch slurm/run_train_gemma4ec_9b.sh   # 9B model
-sbatch slurm/run_train_gemma4ec_2b.sh   # 2B model
+MODEL_ID=google/txgemma-2b-predict sbatch slurm/run_train_gemma4ec_9b.sh   # 2B model
 ```
 
 The scripts configure GPU and memory resources and launch distributed training via 🤗 Accelerate. For authentication details, see [`docs/huggingface_authentication.md`](huggingface_authentication.md).

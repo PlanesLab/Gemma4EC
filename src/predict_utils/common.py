@@ -118,6 +118,44 @@ def call_api_model(
             max_output_tokens=max_output_tokens,
         )
 
+
+# ---------------------------------------------------------------------------
+# OpenAI free-allowance guard (data-sharing complimentary tokens)
+# ---------------------------------------------------------------------------
+# When OPENAI_FREE_ONLY=1, every OpenAI call reserves tokens in a per-day ledger
+# shared by all jobs (file lock) and refuses to run once the day's complimentary
+# allowance for the model's group would be exceeded. Allowances reset 00:00 UTC.
+OPENAI_RESERVE = 2000  # tokens reserved per call before the real usage is known
+
+
+def _openai_group(model_name: str) -> str:
+    return "mini" if ("mini" in model_name or "nano" in model_name) else "large"
+
+
+def _openai_ledger(delta: int, model_name: str) -> None:
+    if os.environ.get("OPENAI_FREE_ONLY", "0") != "1":
+        return
+    import fcntl
+    import json as _json
+    from datetime import datetime, timezone
+
+    group = _openai_group(model_name)
+    cap = int(os.environ.get(f"OPENAI_DAILY_CAP_{group.upper()}",
+                             950_000 if group == "large" else 9_500_000))
+    ledger_dir = Path(os.environ.get("OPENAI_USAGE_LEDGER", Path.home() / ".gemma4ec_openai_usage"))
+    ledger_dir.mkdir(parents=True, exist_ok=True)
+    path = ledger_dir / f"{datetime.now(timezone.utc):%Y-%m-%d}_{group}.json"
+    with open(path, "a+") as f:
+        fcntl.flock(f, fcntl.LOCK_EX)
+        f.seek(0)
+        used = int((_json.loads(f.read() or "{}")).get("tokens", 0))
+        if delta > 0 and used + delta > cap:
+            raise RuntimeError(f"OPENAI_DAILY_CAP_REACHED ({group}: {used}/{cap} tokens today)")
+        f.seek(0)
+        f.truncate()
+        f.write(_json.dumps({"tokens": max(0, used + delta), "cap": cap}))
+        fcntl.flock(f, fcntl.LOCK_UN)
+
 def call_openai_model(
     model_name: str,
     prompt: str,
@@ -132,11 +170,13 @@ def call_openai_model(
     """
     client = get_openai_client()
     final_text = ""
+    used_tokens = None
+    _openai_ledger(OPENAI_RESERVE, model_name)
 
     # =========================
     # GPT-5+ → responses API
     # =========================
-    if model_name.startswith("gpt-5"):
+    if model_name.startswith(("gpt-5", "gpt-6")):
         if DEBUG_API:
             print(f"[debug_openai] Using responses API for model={model_name}", flush=True)
             print("[debug_openai] Prompt head:\n"
@@ -149,7 +189,12 @@ def call_openai_model(
         if max_output_tokens is not None:
             kwargs["max_output_tokens"] = max_output_tokens
 
-        response = client.responses.create(**kwargs)
+        try:
+            response = client.responses.create(**kwargs)
+        except Exception:
+            _openai_ledger(-OPENAI_RESERVE, model_name)
+            raise
+        used_tokens = getattr(getattr(response, "usage", None), "total_tokens", None)
 
         # 🔹 Extraer texto de forma robusta
         text_parts = []
@@ -182,7 +227,12 @@ def call_openai_model(
             else:
                 kwargs["max_tokens"] = max_output_tokens
 
-        completion = client.chat.completions.create(**kwargs)
+        try:
+            completion = client.chat.completions.create(**kwargs)
+        except Exception:
+            _openai_ledger(-OPENAI_RESERVE, model_name)
+            raise
+        used_tokens = getattr(getattr(completion, "usage", None), "total_tokens", None)
         final_text = completion.choices[0].message.content or ""
 
     # =========================
@@ -196,6 +246,9 @@ def call_openai_model(
             flush=True
         )
 
+    # replace the reservation with the real usage (keep it if usage is missing)
+    if used_tokens is not None:
+        _openai_ledger(int(used_tokens) - OPENAI_RESERVE, model_name)
     return final_text.strip()
 
 def call_gemini_model(
@@ -238,12 +291,13 @@ def call_gemini_model(
     except Exception as e:
         msg = str(e).lower()
 
-        # Quota / resource exhaustion → remove key from pool
-        if (
-            "quota" in msg
-            or "exceeded" in msg
-            or "resource_exhausted" in msg
-        ):
+        is_quota = "quota" in msg or "exceeded" in msg or "resource_exhausted" in msg
+        # Free tier: per-minute limits are transient → back off and retry the same key
+        if is_quota and not re.search(r"per_?day|perday|daily", msg):
+            raise RuntimeError("GEMINI_RATE_LIMITED (per-minute quota)")
+
+        # Daily quota exhausted → remove key from pool until the job is re-run
+        if is_quota:
             with _GEMINI_LOCK:
                 print(
                     f"[gemini] 🔥 Quota exhausted for key gemini_{fingerprint}, "

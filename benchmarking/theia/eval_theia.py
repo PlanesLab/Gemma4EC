@@ -2,11 +2,11 @@
 eval_theia.py — Evaluate the pre-trained Theia MLP baseline on a CSV split.
 
 Reads a CSV with `rxn_smiles` and `ec` columns, encodes DRFP fingerprints,
-runs the Theia MLPClassifier, and writes a TSV compatible with summarize_results.py.
+runs the Theia MLPClassifier, and writes a TSV of predictions.
 
 Usage:
     python eval_theia.py \
-        --input_csv    data/ECReact/test.csv \
+        --input_csv    data/ECReact_seeds_strat_dedup/seed0/test.csv \
         --output_tsv   outputs/theia/theia_test.tsv \
         --model_pt     outputs/theia_raw/model.pt \
         --labelenc_pkl outputs/theia_raw/label_encoder.pkl
@@ -14,7 +14,7 @@ Usage:
     # all three splits:
     for SPLIT in train val test; do
         python eval_theia.py \
-            --input_csv    data/ECReact/${SPLIT}.csv \
+            --input_csv    data/ECReact_seeds_strat_dedup/seed0/${SPLIT}.csv \
             --output_tsv   outputs/theia/theia_${SPLIT}.tsv \
             --model_pt     outputs/theia_raw/model.pt \
             --labelenc_pkl outputs/theia_raw/label_encoder.pkl

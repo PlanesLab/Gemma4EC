@@ -138,4 +138,4 @@ See [`results/README.md`](../results/README.md) for the full TSV schema.
 - Multi-GPU inference significantly improves throughput for large datasets.
 - Ensure sufficient disk space for model caching (`$HF_HOME`).
 - For most users, **the pretrained adapters on Hugging Face are sufficient** — retraining is unnecessary.
-- For attention-based mechanistic explanation on a subset of reactions, see [`infer_attention.py`](../infer_attention.py) and [`notebooks/mechanistic_explanation.ipynb`](../notebooks/mechanistic_explanation.ipynb).
+- For explanations of the predictions, see [`docs/chat.md`](chat.md).

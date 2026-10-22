@@ -10,6 +10,7 @@
 #SBATCH --output=logs/api_predict_%j.out
 
 set -euo pipefail
+[[ -f "${PROJECT_ROOT:-$PWD}/config.sh" ]] && source "${PROJECT_ROOT:-$PWD}/config.sh"   # site paths (config.sh.example)
 
 echo "Starting API prediction job: $(date)"
 hostname
@@ -18,7 +19,7 @@ hostname
 # USER CONFIGURATION
 # =======================
 PROJECT_ROOT=${PROJECT_ROOT:-$PWD}
-SCRATCH_ROOT=${SCRATCH_ROOT:-/scratch/$USER}
+SCRATCH_ROOT=${SCRATCH_ROOT:-$PWD/work}
 
 # Positional arguments:
 # 1) model name (default: gpt-5-mini)
@@ -26,7 +27,7 @@ SCRATCH_ROOT=${SCRATCH_ROOT:-/scratch/$USER}
 MODEL_NAME=${1:-"gpt-5-mini"}
 ARG2=${2:-""}
 
-DATA_ROOT=${DATA_ROOT:-"$PROJECT_ROOT/data/ECReact"}
+DATA_ROOT=${DATA_ROOT:-"$PROJECT_ROOT/data/ECReact_seeds_strat_dedup/seed0"}
 
 # =======================
 # RESOLVE INPUT CSV

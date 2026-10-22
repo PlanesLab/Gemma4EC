@@ -5,6 +5,9 @@ import json
 import random
 import time
 import argparse
+import sys
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 import pandas as pd
 from typing import Optional, List
@@ -27,6 +30,9 @@ def run_prediction(
     model_name: str,
     max_output_tokens: Optional[int] = None,
     batch_limit: Optional[int] = None,
+    workers: int = 1,
+    max_attempts: int = 8,
+    min_interval: float = 0.0,
 ):
     """
     1) Generates the JSONL from the CSV, using the same logic as Gemma4EC.
@@ -111,135 +117,113 @@ def run_prediction(
             all_status[idx]    = row["status"]
 
     # ------------------------------------------------------------------
-    # Main prediction loop
+    # Main prediction loop (thread pool; one API call per sample)
     # ------------------------------------------------------------------
     with jsonl_path.open("r", encoding="utf-8") as f:
-        for idx, line in enumerate(f):
-            
-            if batch_limit is not None and idx >= batch_limit:
-                print(f"[api_predict] Reached batch_limit={batch_limit}, stopping.", flush=True)
-                break
+        samples = [json.loads(line) if line.strip() else None for line in f]
 
-            if all_wf[idx]:
-                print(f"[api_predict] Sample {idx} already done → skipping", flush=True)
-                continue
+    pending = [
+        idx for idx, obj in enumerate(samples)
+        if obj is not None and not all_wf[idx]
+        and (batch_limit is None or idx < batch_limit)
+    ]
+    print(f"[api_predict] {sum(all_wf)} samples already done, "
+          f"{len(pending)} pending, workers={workers}", flush=True)
 
-            line = line.strip()
-            if not line:
-                continue
-            obj = json.loads(line)
-            input_text = obj.get("input_text", "")
-            label = obj.get("output_text", "")
-            true_label = "" if label is None else str(label)
-            smiles = extract_smiles_from_input(input_text)
+    BASE_SLEEP = 2.0
+    lock = threading.Lock()
+    stop_event = threading.Event()
+    fatal = []
+    n_done = 0
+    rate_lock = threading.Lock()
+    next_slot = [0.0]
 
-            # API call with retries
-            BASE_SLEEP = 2.0
-            attempt = 0
-            completion = None
-            status = None
+    def wait_for_slot():
+        # Global spacing between request starts (free-tier requests-per-minute limits)
+        if min_interval <= 0:
+            return
+        with rate_lock:
+            now = time.monotonic()
+            start = max(now, next_slot[0])
+            next_slot[0] = start + min_interval
+        time.sleep(max(0.0, start - now))
 
-            while True:
-                attempt += 1
-                try:
-                    print(
-                        f"[api_predict] Sample {idx} | attempt {attempt}",
-                        flush=True
-                    )
-                    completion = call_api_model(
-                        model_name=model_name,
-                        prompt=input_text,
-                        max_output_tokens=max_output_tokens,
-                    )
+    def checkpoint():
+        write_predictions_tsv(
+            out_path, all_labels, all_preds, all_frags, all_wf,
+            all_smiles, all_attempts, all_status,
+        )
 
-                    if completion and completion.strip():
-                        break
+    def predict_one(idx: int):
+        obj = samples[idx]
+        input_text = obj.get("input_text", "")
+        label = obj.get("output_text", "")
+        true_label = "" if label is None else str(label)
+        smiles = extract_smiles_from_input(input_text)
 
-                except Exception as e:
-                    err_low = str(e).lower()
-                    print(
-                        f"[api_predict] Error at sample {idx} attempt {attempt}: {e}",
-                        flush=True
-                    )
-                    if "gemini_key_exhausted" in err_low:
-                        print("[api_predict] Gemini key exhausted, retrying with another key...", flush=True)
-                        continue
-
-                    if "all gemini api keys exhausted" in err_low:
-                        print(
-                            "\n🔴 [api_predict] ALL Gemini API KEYS exhausted.\n"
-                            "🛑 Stopping execution safely.\n"
-                            "📅 Re-run the same job tomorrow; it will resume automatically.\n",
-                            flush=True
-                        )
-
-                        write_predictions_tsv(
-                            out_path,
-                            all_labels,
-                            all_preds,
-                            all_frags,
-                            all_wf,
-                            all_smiles,
-                            all_attempts,
-                            all_status,
-                        )
-                        return
-
-                sleep_time = BASE_SLEEP * (2 ** min(attempt - 1, 5)) + random.uniform(0, 1)
-                print(
-                    f"[api_predict] Sleeping {sleep_time:.1f}s before retry",
-                    flush=True
+        completion = None
+        attempt = 0
+        while attempt < max_attempts and not stop_event.is_set():
+            attempt += 1
+            try:
+                wait_for_slot()
+                completion = call_api_model(
+                    model_name=model_name,
+                    prompt=input_text,
+                    max_output_tokens=max_output_tokens,
                 )
-                time.sleep(sleep_time)
+                if completion and completion.strip():
+                    break
+            except Exception as e:
+                err_low = str(e).lower()
+                print(f"[api_predict] Error at sample {idx} attempt {attempt}: {e}", flush=True)
+                if "gemini_key_exhausted" in err_low:
+                    continue
+                if "no credits remaining" in err_low or "insufficient_quota" in err_low:
+                    print("\n🔴 [api_predict] Account has no credit — stopping (not retried).\n", flush=True)
+                    fatal.append("no_credit")
+                    stop_event.set()
+                    return
+                if "all gemini api keys exhausted" in err_low or "openai_daily_cap_reached" in err_low:
+                    print("\n🔴 [api_predict] Daily free quota exhausted. Stopping; "
+                          "re-run the same job to resume.\n", flush=True)
+                    stop_event.set()
+                    return
+            time.sleep(BASE_SLEEP * (2 ** min(attempt - 1, 5)) + random.uniform(0, 1))
 
-            # --------------------------------------------------------------
-            # Post-retry handling
-            # --------------------------------------------------------------
-            if not completion:
-                status = "RETRY_LATER"
-                completion = "error" 
+        if stop_event.is_set() and not completion:
+            return
 
-                print(
-                    "\n"
-                    f"🟡 [api_predict] Sample {idx} could not be resolved today after "
-                    f" {attempt} attempts."
-                    "ℹ️ This is expected when working under daily API quota constraints.\n"
-                    "📅 Re-run the same job tomorrow; execution will resume from this point.\n"
-                    "✅ All previous predictions are safely preserved.\n",
-                    flush=True
-                )
-                     
-            combined_text = f"Answer: {completion}"
-            raw = parse_ec_raw(combined_text)
-            frag = leading_ec_fragment(raw)
-            wf = is_well_formed_ec(raw)
+        status = None
+        if not completion:
+            # Left not well-formed → retried automatically on the next run.
+            status = "RETRY_LATER"
+            completion = "error"
 
-            if status is None:
-                status = "OK" if wf else "ERROR_PARSE"
+        raw = parse_ec_raw(f"Answer: {completion}")
+        frag = leading_ec_fragment(raw)
+        wf = is_well_formed_ec(raw)
+        if status is None:
+            status = "OK" if wf else "ERROR_PARSE"
 
-            all_labels[idx]    = true_label
-            all_preds[idx]     = raw
-            all_frags[idx]     = frag
-            all_wf[idx]        = wf
-            all_smiles[idx]    = smiles
+        nonlocal n_done
+        with lock:
+            all_labels[idx]   = true_label
+            all_preds[idx]    = raw
+            all_frags[idx]    = frag
+            all_wf[idx]       = wf
+            all_smiles[idx]   = smiles
             all_attempts[idx] = attempt
             all_status[idx]   = status
+            n_done += 1
+            if n_done % 50 == 0:
+                print(f"[api_predict] Processed {n_done}/{len(pending)} pending samples", flush=True)
+                checkpoint()
 
-            if (idx + 1) % 50 == 0:
-                print(f"[api_predict] Processed {idx + 1} samples...", flush=True)
-
-            if (idx + 1) % 10 == 0:
-                write_predictions_tsv(
-                    out_path,
-                    all_labels,
-                    all_preds,
-                    all_frags,
-                    all_wf,
-                    all_smiles,
-                    all_attempts,
-                    all_status
-                )
-                print(f"[api_predict] Checkpoint saved at sample {idx}", flush=True)
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        for fut in as_completed([pool.submit(predict_one, i) for i in pending]):
+            fut.result()
+    quota_stopped = stop_event.is_set()
 
     # ------------------------------------------------------------------
     # Final write
@@ -254,6 +238,9 @@ def run_prediction(
         all_attempts,
         all_status
     )
+    if fatal:
+        return "fatal"
+    return "quota" if quota_stopped else "done"
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -274,12 +261,15 @@ def parse_args():
     parser.add_argument("--model_name",type=str, required=True, help="Model name, e.g. 'gpt-5-mini', 'gpt-5.1', 'gemini-3.5-pro', 'gemini-2.5-flash'.")
     parser.add_argument("--max_output_tokens", type=int, default=None, help="Optional: override max output tokens. If None, model default is used.")
     parser.add_argument("--batch_limit", type=int, default=None, help="Optional: limit number of samples to process, for quick tests.")
+    parser.add_argument("--workers", type=int, default=1, help="Concurrent API requests (default: 1).")
+    parser.add_argument("--min_interval", type=float, default=0.0, help="Minimum seconds between API requests across all workers (e.g. 6 for a 10 RPM free tier).")
+    parser.add_argument("--max_attempts", type=int, default=8, help="Attempts per sample before marking RETRY_LATER (retried on the next run).")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    run_prediction(
+    outcome = run_prediction(
         raw_data_file=args.raw_data_file,
         processed_data_folder=args.processed_data_folder,
         output_folder=args.output_folder,
@@ -289,5 +279,11 @@ if __name__ == "__main__":
         model_name=args.model_name,
         max_output_tokens=args.max_output_tokens,
         batch_limit=args.batch_limit,
+        workers=args.workers,
+        max_attempts=args.max_attempts,
+        min_interval=args.min_interval,
     )
- 
+    if outcome == "fatal":
+        sys.exit(4)  # e.g. no API credit: do not re-submit
+    if outcome == "quota":
+        sys.exit(3)  # daily free quota exhausted → caller re-submits after the reset

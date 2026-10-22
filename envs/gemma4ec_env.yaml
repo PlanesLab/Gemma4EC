@@ -1,50 +1,33 @@
+# Main environment: EC prediction, fine-tuning, attention, chat explanations.
+#   conda env create -f envs/gemma4ec_env.yaml && conda activate gemma4ec
+# Versions are those used for the paper.
 name: gemma4ec
 channels:
   - conda-forge
 dependencies:
-  - python=3.12
+  - python=3.11
   - pip
-  - ca-certificates
-  - openssl
-
-  # --- Optional but recommended ---
   - numpy
   - pandas
   - scikit-learn
-
   - pip:
-      # Core libraries for gemma4ec
       - torch==2.8.0
-      - torchvision==0.23.0
-      - torchaudio==2.8.0
       - accelerate==1.7.0
-      - transformers==4.52.3
+      - transformers==5.8.1
       - peft==0.15.2
-      - datasets==3.6.0
+      - datasets==4.8.5
       - safetensors==0.5.3
-
-      # Theia MLP baseline
-      - drfp
-      - theia
-
-      # gemma4ec utilities
-      - einops
-      - tqdm
-      - regex
-      - sentencepiece  # sometimes required for HF models
-
-      # APIs used in predict_api.py
-      - openai
-      - google-genai
-      - tiktoken
-
-      # Optional: WandB logging
-      - wandb
-
-      # Optional: data manipulation / plotting
+      - huggingface_hub==1.15.0
+      - bitsandbytes==0.49.2     # optional: 4-bit loading on small GPUs
+      - rdkit==2026.3.2          # chat explanations (reaction facts, BRENDA ranking)
+      - bertviz==1.4.1           # attention export
       - matplotlib
-      - seaborn
-
-      # Optional but useful
-      - jupyterlab
-      - ipykernel
+      - pillow
+      - tqdm
+      - sentencepiece
+      - wandb==0.26.1            # optional: training logs
+      # benchmark only
+      - drfp==0.3.7
+      - theia
+      - openai==2.36.0
+      - google-genai==2.2.0

@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use Gemma4EC, please cite it as below."
+title: "Gemma4EC: EC number prediction and explanation from reaction SMILES with a fine-tuned TxGemma"
+type: software
+authors:
+  - family-names: Arcagni
+    given-names: Josefina
+    email: jarcagniriv@unav.es
+  - family-names: Sancho-Zamora
+    given-names: Joseba
+    email: jsanchoz@unav.es
+license: MIT
+date-released: "2026-10-21"
+repository-code: "https://github.com/PlanesLab/Gemma4EC"
+keywords:
+  - enzyme
+  - EC number prediction
+  - large language model
+  - TxGemma
+  - reaction SMILES

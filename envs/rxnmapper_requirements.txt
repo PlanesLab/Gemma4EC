@@ -1,0 +1,10 @@
+# Separate environment for atom mapping in the chat explanations (chat/reaction_facts.py).
+# RXNMapper needs its own transformers version, so it does not share the gemma4ec environment.
+#   python3.11 -m venv envs/rxnmapper && envs/rxnmapper/bin/pip install -r envs/rxnmapper_requirements.txt
+#   (CPU is enough; add --index-url https://download.pytorch.org/whl/cpu for a CPU-only torch)
+torch==2.8.0
+rxnmapper==0.4.3
+transformers==4.57.6
+rdkit==2026.9.1
+pandas
+numpy

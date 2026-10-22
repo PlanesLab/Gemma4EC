@@ -35,8 +35,6 @@ models/
 outputs/
 */processed/
 
-# Theia train predictions (large — test/val predictions are committed)
-results/Theia/theia_train_predictions.tsv
 
 # Training outputs & logs
 logs/
@@ -53,3 +51,29 @@ Thumbs.db
 
 # W&B local cache
 wandb/
+
+# --- generated / local files (added 2026-10-08) ---
+slurm_logs/
+*.ckpt
+data/ECReact_seeds_*/
+attn_out/
+
+# --- local configuration and run outputs (added 2026-10-21) ---
+config.sh
+work/
+chat_out/
+attn_out/
+attn_ft/
+attn_small/
+envs/rxnmapper/
+data/external/
+chat/data/
+chat/ft_adapter/
+chat/ft_data/
+chat/prompts/
+figures/chat/
+figures/seeds/
+!figures/seeds/strat_dedup/fig_main_benchmark.png
+!figures/seeds/strat_dedup/fig4_pvalue_triangle.png
+!figures/seeds/strat_dedup/fig7_dataset_pies.png
+figures/paper
