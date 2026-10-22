@@ -6,9 +6,20 @@
 
 **Gemma4EC predicts the Enzyme Commission (EC) number of a biochemical reaction from its SMILES, and explains the prediction in plain language.**
 
-It is [TxGemma](https://huggingface.co/google/txgemma-9b-predict) (Google) fine-tuned with a small LoRA adapter. Give it a reaction such as `CCO.O=O>>CC=O.OO` and it returns the EC class, subclass and sub-subclass (e.g. `1.1.3`). A companion chat then names the likely enzyme and explains its catalytic mechanism.
+<table>
+<tr>
+<td width="55%" valign="top">
 
-<p align="center"><img src="figures/gemma4ec.png" width="70%"/></p>
+Gemma4EC is based on [TxGemma](https://huggingface.co/google/txgemma-9b-predict) (Google), fine-tuned with a small LoRA adapter. It uses reaction SMILES as input, such as `CCO.O=O>>CC=O.OO` and returns the EC class, subclass and sub-subclass (e.g. `1.1.3`). A companion chat then names the likely enzyme and explains its catalytic mechanism.
+
+</td>
+<td width="45%" valign="middle" align="center">
+
+<img src="figures/gemma4ec.png" width="100%" alt="Gemma4EC interface">
+
+</td>
+</tr>
+</table>
 
 ---
 

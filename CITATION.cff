@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use Gemma4EC, please cite it as below."
-title: "Gemma4EC: EC number prediction and explanation from reaction SMILES with a fine-tuned TxGemma"
+title: "Gemma4EC: Biochemical Reaction Annotation via Low-Rank Adaptation of a Foundation Model"
 type: software
 authors:
   - family-names: Arcagni
@@ -9,6 +9,9 @@ authors:
   - family-names: Sancho-Zamora
     given-names: Joseba
     email: jsanchoz@unav.es
+  - family-names: Blasco
+    given-names: Telmo
+    email: tblasco@unav.es
 license: MIT
 date-released: "2026-10-21"
 repository-code: "https://github.com/PlanesLab/Gemma4EC"
