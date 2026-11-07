@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environments
+.env
+.venv
+env/
+venv/
+*.env
+
+# HuggingFace / model caches
+hfcache/
+.cache/
+local_txgemma_model/
+
+# Adapter / checkpoint weights — large binary files, hosted on HuggingFace Hub
+*.safetensors
+models/
+*.pt
+*.pth
+*.bin
+
+# Generated / intermediate JSONL batches
+outputs/
+*/processed/
+
+
+# Training outputs & logs
+logs/
+*.out
+*.err
+tea_debug.log
+
+# Dev / scratch
+stuff/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# W&B local cache
+wandb/
+
+# --- generated / local files ---
+slurm_logs/
+*.ckpt
+data/ECReact_seeds_*/
+
+# --- local configuration and run outputs ---
+config.sh
+work/
+chat_out/
+attn_out/
+envs/rxnmapper/
+data/external/
+chat/data/
+figures/**/*.pdf
+
+# scorer caches
+results/**/*.pkl

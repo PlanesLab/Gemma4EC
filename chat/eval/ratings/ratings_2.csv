@@ -1,0 +1,74 @@
+item_id,mechanism_correct,enzyme_plausible,contradicts_reaction,unverifiable_detail,useful,notes
+I001,2,2,1,0,2,"Reaction is the DGAT reaction (DAG + acyl-CoA -> TAG), so 2.3.1.20 is defensible though DB EC is 2.3.1.76. Odd phrase 'the other oxygen atom of O46 loses a hydrogen'."
+I002,2,2,0,0,2,"Correct: Co(I) supernucleophile takes the methyl (SN2), dimethylamine leaves; rightly ignores the Zn/Cys analog reference. Claim that the record is 'inconsistent' is unfounded."
+I003,1,2,2,0,1,Says the ester bond forms 'between the two fatty acids'; it is between the glycerol sn-3 O and the incoming acyl. Garbled substrate name ('docosapentyl]').
+I004,1,2,0,2,1,Vague and muddled (His deprotonating 'the hydroxyl of SPC or the leaving phosphate'). His base copied from an unrelated PLC-type analog; autotaxin/ENPP2 uses a Thr nucleophile with two Zn2+. Weak Why section; markdown debris.
+I005,0,1,2,1,0,"Recorded direction is cyanohydrin formation but the text describes HCN elimination; bookkeeping inverted ('cyanide gains positive charge', 'C4=O forms'). (S) stereo not in SMILES; true 4.1.2.46 is the (R)-selective aliphatic HNL. Ser-His copied from the 4.1.2.47 reference."
+I006,1,2,2,1,1,"Record is garbled (GMP + AMP + PPi -> Gln: reverse and unbalanced); text flags this but describes the forward reaction wrongly: XMP attacks ATP alpha-P (not 'beta-phosphate deprotonated'), His deprotonates (not protonates) Cys, NH3 attacks adenyl-XMP releasing AMP (not 'attack by AMP'). 'Passed between two histidines' invented."
+I007,1,2,1,2,1,"Hydride transfer named but no carbons (C2 proton to Glu, C3 hydride to FAD N5). Claims the record 'mentions trans-2,3-dehydroacyl-CoA'; it does not. Missing enoyl-CoA product and pipeline's wrong 'CoA is released' not flagged. Spurious 'two changes at same site'. Glu copied from analog."
+I008,1,2,1,0,1,"PSD uses a pyruvoyl prosthetic group, not PLP: wrong cofactor (from class reference). Product released is PE, not 'ethanolamine'. Spurious 'two sites' claim (O27 protonation is only charge state)."
+I009,0,2,2,0,0,Misstates bond changes (no C2=C7 double bond replaced; no C6-C7 bond forms). 'gamma-keto acid -> 4-keto acid' wrong: no keto groups. Omits the adenosylcobalamin radical mechanism.
+I010,1,2,1,0,1,Only restates the bond change. Wrongly says the reference describes the reverse reaction (IMPase reference is also hydrolysis). Lipin-type PAP is a Mg2+-dependent DxDxT (HAD) phosphatase with phospho-Asp intermediate; not mentioned.
+I011,1,2,1,0,1,"PLP is the wrong cofactor for PSD (pyruvoyl). Transaldimination reversed ('amino group displaced by Lys'). Releases PE, not 'ethanolamine'."
+I012,0,2,2,0,0,"Recorded direction is amide formation (THF + Glu -> THF-Glu + H2O), reverse of carboxypeptidase hydrolysis; not noticed and Why says it 'cleaves a peptide bond'. Nucleophile backwards (Glu amine attacks THF gamma-carboxyl C); C23-O42 is not a peptide bond; N25 loses (not gains) 2 H."
+I013,1,2,1,0,1,PLP wrong for PSD (pyruvoyl); transaldimination reversed; 'releases ethanolamine' should be PE.
+I014,2,2,0,0,2,Correct DGAT-type acyl transfer. DB EC 2.3.1.76 but reaction is the DGAT reaction.
+I015,2,1,2,1,1,"Epoxidation via C4a-hydroperoxyflavin is plausible, but the Why section dismisses the substrate as a 'typo' and calls phenol hydroxylation a 'reduction'. Treats pipeline NADH protonation artifacts (O21/O25) as chemistry. Flavin details copied from phenol hydroxylase."
+I016,0,2,2,0,0,"Deprotonation at C7 (C4) is right, but then says thioester O 'picks up a proton from C9' (C9 gains H) and copies 'protonation of C4' from the reference, contradicting the C4 deprotonation. Calls allene->alkyne a 'desaturase reaction'."
+I017,1,2,2,0,0,"Only restates bonds (says N9 loses H; it gains). Why invents H2S and 'thiolase'. Cystathionine + H2O -> homocysteine + serine is the reverse of cystathionine beta-synthase, not the normal CGL reaction (cysteine + 2-oxobutanoate + NH3); no PLP chemistry."
+I018,1,1,2,0,1,SN2 methyl transfer to N is right. Proposed 2.1.1.10 (homocysteine S-methyltransferase) is the wrong enzyme; true 2.1.1.71. Why names S-methyl-L-methionine as donor and calls the N a 'non-amino group'. Spurious 'two reactions' claim.
+I019,1,2,1,0,1,"PLP wrong for PSD (pyruvoyl). Releases PE, not ethanolamine."
+I020,1,2,1,0,1,"Restates pipeline charge bookkeeping; 'forming a new O56-C54 bond with water, releasing it as H2O' is garbled. No thioesterase mechanism. Reaction is clearly succinyl-CoA hydrolase; DB 3.1.2.20 is the generic acyl-CoA hydrolase."
+I021,1,2,2,0,1,"Core P-O substitution right, but claims the mechanism 'implies' C57/C98 gain H and that C-O bonds break; these are artifacts of a mis-drawn record (PG acyl chains change from 16:0 to 12:0/14:0), not identified. Group transferred is phosphatidyl, not 'phosphate'."
+I022,1,2,2,2,1,Copies dihydropyrimidine dehydrogenase FAD->FMN->FeS path from the analog; 1.3.1.20 (AKR-type) transfers hydride directly from NADPH with a Tyr acid. 'Reverse of the reference' is wrong (both reductions); electrons said to flow to NADP+.
+I023,1,2,2,0,0,PLP wrong for PSD (pyruvoyl); 'releases ethanolamine' should be PE; invents 'the new C=C of the docosenoyl chain' (no C=C forms).
+I024,1,2,1,0,1,"Half-reactions conflated: S57-C58 is not formed at adenylation, and CoA thiol attack on acyl-AMP is not described ('intermediate collapses, expelling AMP'). O96 charge described wrongly."
+I025,1,1,2,0,1,Methyl put on phosphate O31 instead of N35: wrong bond. Homocysteine S-methyltransferase is the wrong enzyme (true 2.1.1.71); Why says homocysteine is the acceptor.
+I026,0,2,2,0,1,"GMD sequence (C4 oxidation, C5/C6 dehydration, reduction) is right, but the final hydride goes to C6 (C1 here), not C37 (C4, which ends as the ketone). Wrongly says the reference enzyme 'causes the reverse reaction'. Guanine tautomer artifacts in record not noticed."
+I027,0,2,2,0,0,"Wrong: C2 gains (not loses) a proton; C4-C5 becomes single, not double. Correct: Pro-1 removes the enol O-H and protonates C2 (C5 of muconate). Why quotes the unmethylated reaction."
+I028,0,1,2,1,0,Record is mis-drawn (but-2-enal cannot give pyruvate); true 1.2.7.5 aldehyde:ferredoxin oxidoreductase (W-pterin) would give crotonate. Applies TPP pyruvate decarboxylation to a reaction that makes pyruvate and invents a C-C bond; claim that water O has no source is wrong.
+I029,1,2,2,0,1,"Bond-level restatement right, but NADPH is a pipeline artifact (no redox occurs) and is given a role. Calls it 'ring-closing' while the record is ring opening (reverse of tocopherol cyclase); direction not flagged."
+I030,0,2,1,1,0,Claims agreement with a mechanism reference although none was given. 'Leaving CH2 group gains a hydrogen' is wrong. No GH32 retaining (Asp nucleophile / Glu acid-base) mechanism.
+I031,1,1,0,1,1,"Verbatim copy of the OPR reference: hydride to C-beta and Tyr protonation of C-alpha are right at bond level, but FMN is OPR's (OYE) cofactor; enoyl-ACP reductases take hydride directly from NAD(P)H. Why uninformative; markdown debris."
+I032,1,2,2,0,1,Ring opening and C2->C1 hydride shift follow the reference; metal (Mn2+) role omitted. Why wrongly calls it 'epimerization at C4' / hydroxyl moving O3->O9; it is aldose-ketose isomerization.
+I033,1,2,2,0,1,"Reaction is epoxide hydrolysis; P450 cycle 'run in reverse' does not explain it. Why invents O2 and reductase participants. DB 1.14.14.1 accepted, but the chemistry is not a monooxygenation."
+I034,1,2,1,0,1,"PLP wrong for PSD (pyruvoyl). Releases PE, not ethanolamine."
+I035,0,2,2,0,0,"Record is chimeric (acid -> aldehyde plus reduction of the alkyne and two alkenes); not flagged. Calls it oxidation of an 'alcohol' (none present), says triple -> double (goes to single), garbles NADP+/NADPH."
+I036,2,2,1,2,1,"Hydride to C5 correct. Lys as proton donor copied from ketopantoate reductase analog; TR-I is an SDR (Tyr acid, Ser/Lys). Treats NADPH charge artifacts as chemistry; Why equation has NADP+ on both sides."
+I037,1,1,2,1,1,Ferrochelation is two N-H deprotonations plus Fe2+ insertion; text invents 'forming a pyrrole ring and a hydroxyl group' and cites a reference that was not given. Spurious 'four sites' claim. Record product lacks Fe.
+I038,1,2,2,0,1,"Restates likely mis-mapped bond changes (2'-OH oxygen into CO2). No glycyl/thiyl radical mechanism. Why says formate is 'added' to the NTP; formate is the reductant, oxidised to CO2."
+I039,1,1,2,0,1,"SN2 attack of N on the SAM methyl is right, but says N33 gains H (it loses one) and 'S leaves with its CH3'. 2.1.1.17 vs DB 2.1.1.71."
+I040,1,2,2,0,1,Attacking OH assigned to 'the first acyl group' and ester formed 'between the two acyl groups': wrong atoms; it is the glycerol sn-3 OH.
+I041,1,2,2,0,1,"Bookkeeping inverted: C2=O1 double bond forms (not single), water consumed (not formed), C2 becomes neutral, O1 loses 2 H. Isocyanide is not a nitrile. No Cys-nucleophile (ICH) mechanism."
+I042,1,2,0,0,1,Correct but minimal; no phosphatase mechanism. Odd sentence about 'the provided fact'; markdown debris.
+I043,1,2,1,0,1,"No GTP-dependent activation (acyl-phosphate) step; 'O loses an O' meaningless. GDP + Pi co-products missing from record, not noted."
+I044,1,2,0,2,2,"Retro-aldol cleavage with Cys protonation of the propanoate carbanion is right, but Asp/water/Cys details are copied from the methylisocitrate lyase analog; Mg2+ omitted."
+I045,0,2,2,1,0,"Cites a mechanism reference that was not given; inverts bond changes (C2-C3 becomes double, C2-C12 single) and says C5-C7 is broken (it becomes single). Spurious 'two sites'; the C7-C12 cyclization is left unexplained."
+I046,1,2,2,0,1,Record is the reverse of UDP-sugar diphosphatase hydrolysis (condensation); not flagged and Why says it is 'exactly' the hydrolase reaction. Says P15-O14 is both broken and formed; the broken bond is a phosphate P-O (lost as water).
+I047,1,0,2,1,1,"PLP beta-elimination framework right, but alpha-H is on C2 not C1, beta-OH elimination not described, 'NH4+ from water' nonsense, serine called aromatic. Tryptophanase (4.1.99.1) is the wrong enzyme; DB 4.4.1.13."
+I048,1,2,2,0,1,Redox inverted (Fe2+ -> Fe3+ is oxidation of ferredoxin); 'nitrite gains e- and H+ becoming HNO2' wrong; 'read in reverse' wrong. Record is a one-electron fragment of the 6-electron siroheme reduction to NH4+; ignores reference.
+I049,0,2,2,0,1,"Positions swapped: C6-OH (not C2-OH) attacks phospho-Asp, and Asp then attacks the C1 phosphate (not C6) of the bisphosphate. Spurious 'two reactions' claim. Mg2+ omitted."
+I050,1,2,1,0,1,"Generic CDP-AP mechanism right, but says the P21-O24 bond it just formed is broken. Does not identify that PG acyl chains change length (mis-drawn record)."
+I051,1,2,1,0,1,Bond changes right but no biotin carboxyl-carrier / two half-reaction mechanism. Why says acetyl-CoA comes from methylmalonyl-CoA (that gives propionyl-CoA).
+I052,1,2,0,2,1,"FAD-N5 adduct / ring contraction compressed into one SN2 step (no iminium, ring opening, O4 reclosure). FAD chemistry copied from UDP-galactopyranose mutase analog. Pipeline C-C bond swaps are mapping artifacts, not flagged."
+I053,1,2,1,0,1,"Adenylation then beta-N attack is the right sequence, but bookkeeping is nonsense ('reducing P19 to P20', O45 as 'phosphate leaving group')."
+I054,1,2,1,0,1,Restates bond changes; attributes H loss to C11 (O12 loses it). No ThDP mechanism. Reaction is clearly phenylpyruvate decarboxylase; DB 4.1.1.1.
+I055,2,2,1,0,1,"Correct reference paraphrase, but says the new phosphodiester links the acceptor to 'the CDP group' (it links to phosphatidyl; CMP leaves). Mis-drawn acyl chains not identified."
+I056,0,2,2,2,0,"Copies pentalenene synthase cyclization (humulyl cation, hydride shift, dyotropic rearrangement) for an acyclic product. Nerolidol: FPP ionization, allylic transposition, water capture at C3. Says C2-C3 bond is broken."
+I057,1,2,2,0,1,Says N1-O12 forms (it is C10-O12) and describes a 'hydride transfer from N to O'. No binuclear-metal amidohydrolase mechanism.
+I058,1,2,2,2,1,"Reaction uses GTP so 6.2.1.4 fits it (DB 6.2.1.5 is ADP-forming). Accepts nonsense ring-swap atom mapping, releases PPi instead of GDP, skips succinyl phosphate, calls GTP an acetyl donor; invents EC 7.2.1.2 and 'hydroxylation and carboxylation'."
+I059,1,2,2,0,0,"O2 split between substrate and water is right, but then puts an O atom in NADP+ and mixes up H sources. No FAD/C4a-hydroperoxyflavin (VioC)."
+I060,1,2,2,1,1,"Isomerization needs the 3-keto, so oxidation of 3-OH must come first. Hydride assigned to C10 (C6) instead of C13 (C3); invents a '4,5-epoxysteroid'. Real enzyme is bifunctional 3beta-HSD/isomerase (1.1.1.145 + 5.3.3.1)."
+I061,1,2,2,0,1,"Says O14 leaves as water; it is O24 (distal OH), O14 becomes the ketone. 'Double bond between C13 and C14' garbled. 4.2.1.152 is the defining EC for hydroperoxide -> oxo + H2O (eLOX3 has both activities); DB 5.4.4.7. No non-heme Fe mechanism."
+I062,2,2,1,1,1,Hydride to C2 correct. Misquotes the reference (His instead of Lys); says NADPH oxygens gain protons (pipeline artifacts; they lose them); Why calls the product 2-oxopropanal.
+I063,2,2,0,0,2,Correct DGAT-type acyl transfer. DB EC 2.3.1.76.
+I064,1,1,2,2,1,"Metal-mediated ring opening and hydride shift is a reasonable framework, but hydride direction is reversed relative to its own atom labels and 'double bond shifts from O1-C2 to O2-C1' is incoherent. Metal/hydroxide from xylose isomerase analog. Heavily hedged."
+I065,1,2,1,0,1,"Bond-level description roughly right (O12 loses, not gains, H). No mechanism."
+I066,1,2,2,0,0,Only restates bonds; Why wrongly says the reaction is the reverse of phthalyl amidase hydrolysis. Spurious 'inconsistent' claim.
+I067,1,2,1,2,1,"Hydride from C4 to NAD+ is the gist, but 'prochiral bridge carbon' and Asp deprotonation are copied from precorrin-2 dehydrogenase (different substrate). Decarboxylation not explained; N19 does not gain H."
+I068,1,2,2,0,1,"Lactone hydrolysis correct, but endorses pipeline C-C bond swaps as a real 'rearrangement into a straight chain'. A lactone is not an anhydride."
+I069,1,2,1,0,1,"ATP-grasp route (acyl-phosphate, then amine attack) is right; says 'hydroxyl group' for the carboxylate and muddles ADP formation. DB EC 7.4.2.2 (a transporter) looks wrong; 6.3.2.47 fits the reaction."
+I070,2,2,0,0,1,Water attack on P with phosphate release is right; minimal. Spurious 'inconsistent' claim.
+I071,1,1,2,1,1,Direction reversed: NADH gives hydride to C14 and Tyr protonates O15; text has Tyr abstract a proton from C14 and hydride go 'to NADH'. Calls retinol a 'ketone'. DB 1.1.1.315.
+I072,2,2,0,0,2,Correct. Record changes the acyl double bond from E (reactant) to Z (product); not flagged.
+I073,1,2,1,0,1,"Treats adenylation as phosphoryl transfer and makes thioesterification concurrent; should be acyl-AMP, then CoA attack releasing AMP. Charge bookkeeping muddled."

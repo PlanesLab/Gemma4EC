@@ -1,0 +1,33 @@
+# Main environment: EC prediction, fine-tuning, attention, chat explanations.
+#   conda env create -f envs/gemma4ec_env.yaml && conda activate gemma4ec
+# Versions are those used for the paper.
+name: gemma4ec
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - numpy
+  - pandas
+  - scikit-learn
+  - pip:
+      - torch==2.8.0
+      - accelerate==1.7.0
+      - transformers==5.8.1
+      - peft==0.15.2
+      - datasets==4.8.5
+      - safetensors==0.5.3
+      - huggingface_hub==1.15.0
+      - bitsandbytes==0.49.2     # optional: 4-bit loading on small GPUs
+      - rdkit==2026.3.2          # chat explanations (reaction facts, BRENDA ranking)
+      - bertviz==1.4.1           # attention export
+      - matplotlib
+      - pillow
+      - tqdm
+      - sentencepiece
+      - wandb==0.26.1            # optional: training logs
+      # benchmark only
+      - drfp==0.3.7
+      - theia
+      - openai==2.36.0
+      - google-genai==2.2.0
